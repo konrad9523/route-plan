@@ -2,7 +2,8 @@
 
 from .models import Edge, Graph, Node, RouteResult, TurnRule
 from .costs import CostModel, Preference
-from .router import NoRouteError, plan_route
+from .router import NoRouteError, check_heuristic_consistency, plan_route
+from .osm_loader import load_graphml, parse_wkt_linestring
 
 __all__ = [
     "CostModel",
@@ -13,5 +14,8 @@ __all__ = [
     "Preference",
     "RouteResult",
     "TurnRule",
+    "check_heuristic_consistency",
+    "load_graphml",
+    "parse_wkt_linestring",
     "plan_route",
 ]

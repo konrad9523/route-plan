@@ -8,12 +8,18 @@ from path_planning.router import NoRouteError, plan_route
 
 class RouterTests(unittest.TestCase):
     def test_astar_matches_dijkstra_for_fastest_route(self):
+        """A* 必须和 Dijkstra 给出相同的最优代价。
+
+        注意这里比较的是 **cost 而不是 edge_ids**：
+        最短路径不唯一时（多条路代价相同），两种算法可以各选一条，
+        两条都是最优解。比较边序列会误报失败。
+        """
         graph = build_demo_graph()
         model = CostModel(preference=Preference.FASTEST)
         dijkstra = plan_route(graph, 1, 4, algorithm="dijkstra", cost_model=model)
         astar = plan_route(graph, 1, 4, algorithm="astar", cost_model=model)
-        self.assertEqual(dijkstra.edge_ids, astar.edge_ids)
         self.assertAlmostEqual(dijkstra.cost, astar.cost)
+        self.assertAlmostEqual(dijkstra.distance_m, astar.distance_m)
 
     def test_shortest_and_fastest_can_choose_different_routes(self):
         graph = build_demo_graph()

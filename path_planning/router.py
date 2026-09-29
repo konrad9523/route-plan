@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from heapq import heappop, heappush
+from itertools import count
 from math import inf
 from time import perf_counter
 
@@ -62,6 +63,41 @@ def _reconstruct(
     return edge_ids, node_ids, tuple(geometry), distance_m, duration_s
 
 
+def check_heuristic_consistency(
+    graph: Graph,
+    *,
+    cost_model: CostModel | None = None,
+    limit: int = 20,
+) -> list[tuple[int, int, float, float]]:
+    """检查启发式是否满足一致性：``cost(u→v) + h(v) >= h(u)``。
+
+    为什么需要这个检查：
+        A* 只在启发式**一致**时才保证最优。而启发式是"直线距离 / 最高速度"，
+        这暗含一个前提——**每条边的长度不能比它两端点的直线距离还短**。
+        外部数据（抽稀过的路网、手工构造的测试图、估算的边权）经常违反这一点，
+        此时 A* 会**静默返回次优路径**，不报任何错。
+
+    返回违反一致性的边列表，每项为 ``(edge_id, target_node, 违反量, 边长)``。
+    列表为空表示这张图适合用 A*。
+    """
+
+    model = cost_model or CostModel()
+    violations: list[tuple[int, int, float, float]] = []
+    for edge in graph.edges.values():
+        if edge.from_node not in graph.nodes or edge.to_node not in graph.nodes:
+            continue
+        edge_cost = model.edge_cost(edge)
+        if edge_cost == inf:
+            continue
+        h_from = model.heuristic(graph, graph.node(edge.from_node), graph.node(edge.to_node))
+        # 以边的终点为目标时 h(终点)=0，于是一致性条件化简为 cost >= h(from)
+        if edge_cost + 1e-9 < h_from:
+            violations.append((edge.edge_id, edge.to_node, h_from - edge_cost, edge.length_m))
+            if len(violations) >= limit:
+                break
+    return violations
+
+
 def plan_route(
     graph: Graph,
     source: int,
@@ -74,6 +110,18 @@ def plan_route(
 
     搜索状态包含上一条边，因此能够正确处理转向限制和转向惩罚。
     algorithm 可选 dijkstra 或 astar。
+
+    实现上有两个必须注意的细节（都是踩过坑之后加的）：
+
+    1. 堆元素带一个自增序号 ``tie``。
+       ``_State`` 没有定义大小比较，一旦两项的 (priority, cost) 完全相同，
+       heapq 就会退化成比较 ``_State``，直接抛 TypeError。
+       真实路网上等代价的路段很常见，所以这不是理论问题。
+
+    2. 终止条件不是"弹到终点就停"，而是"队列里的最优优先级已经不可能
+       再改进已知的终点代价"。
+       当启发式满足可采纳性但不满足一致性时（例如边长与节点坐标不自洽的图），
+       "弹到终点就停"会返回次优路径——而且不报任何错。
     """
 
     if source not in graph.nodes or target not in graph.nodes:
@@ -86,24 +134,34 @@ def plan_route(
     start_state = _State(None, source)
     best: dict[_State, float] = {start_state: 0.0}
     parent: dict[_State, tuple[_State, int] | None] = {start_state: None}
-    queue: list[tuple[float, float, _State]] = []
+    queue: list[tuple[float, float, int, _State]] = []
+    tie_breaker = count()
     target_node = graph.node(target)
     start_priority = 0.0
     if algorithm == "astar":
         start_priority = model.heuristic(graph, graph.node(source), target_node)
-    heappush(queue, (start_priority, 0.0, start_state))
+    heappush(queue, (start_priority, 0.0, next(tie_breaker), start_state))
     expanded_states = 0
     queue_pushes = 1
     final_state: _State | None = None
+    best_goal_cost = inf
 
     while queue:
-        _, current_cost, state = heappop(queue)
-        if current_cost != best.get(state):
+        priority, current_cost, _, state = heappop(queue)
+        if current_cost > best.get(state, inf):
             continue
+        # 终止条件：只有当队列里的最优优先级还能改进已知的终点代价时才继续。
+        # 对"一致"(consistent) 的启发式，终点状态的 priority 就等于它的真实代价，
+        # 因此这个条件在第一次弹到终点时即成立。
+        if priority > best_goal_cost:
+            break
         expanded_states += 1
         if state.node_id == target:
-            final_state = state
-            break
+            # 注意：不能无条件覆盖，否则后弹出的、代价更高的终点状态会冲掉好答案。
+            if current_cost < best_goal_cost:
+                final_state = state
+                best_goal_cost = current_cost
+            continue
 
         previous_edge = graph.edges.get(state.previous_edge_id)
         for edge in graph.out_edges(state.node_id):
@@ -122,7 +180,7 @@ def plan_route(
             priority = new_cost
             if algorithm == "astar":
                 priority += model.heuristic(graph, graph.node(edge.to_node), target_node)
-            heappush(queue, (priority, new_cost, next_state))
+            heappush(queue, (priority, new_cost, next(tie_breaker), next_state))
             queue_pushes += 1
 
     elapsed_ms = (perf_counter() - started) * 1000
