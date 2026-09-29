@@ -41,6 +41,29 @@ def parse_wkt_linestring(text: str) -> tuple[tuple[float, float], ...]:
     return tuple(points)
 
 
+def _first_road_type(raw: str | None) -> str:
+    """从 highway 属性里取第一个道路等级。
+
+    需要处理三种形态：
+
+    * 单值：``"residential"``
+    * 逗号分隔：``"trunk,primary"`` → 取 ``"trunk"``
+    * 列表字面量：``"['unclassified', 'residential']"`` → 取 ``"unclassified"``
+      （OSMnx 在一条边合并了不同等级路段时会导出成这种形式，真实数据里存在）
+
+    直接用 ``split(",")[0]`` 会把列表字面量切出 ``"['unclassified'"`` 这种脏值。
+    """
+
+    if not raw:
+        return "residential"
+    text = raw.strip()
+    if text.startswith("["):
+        text = text.strip("[]")
+    if "," in text:
+        text = text.split(",")[0]
+    return text.strip().strip("'\"").strip()
+
+
 def load_graphml(path: str | Path) -> Graph:
     """读 GraphML，返回 path_planning 的 Graph。"""
 
@@ -79,7 +102,7 @@ def load_graphml(path: str | Path) -> Graph:
         geometry_text = values.get("geometry", "")
         geometry = parse_wkt_linestring(geometry_text) if geometry_text else ()
 
-        road_type = (values.get("highway") or "residential").split(",")[0].strip()
+        road_type = _first_road_type(values.get("highway"))
 
         graph.add_edge(
             Edge(

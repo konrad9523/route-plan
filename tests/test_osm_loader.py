@@ -4,14 +4,13 @@ import unittest
 from pathlib import Path
 
 from path_planning.costs import CostModel, Preference
-from path_planning.osm_loader import load_graphml, parse_wkt_linestring
+from path_planning.osm_loader import _first_road_type, load_graphml, parse_wkt_linestring
 from path_planning.router import plan_route
 
 GRAPHML = (
     Path(__file__).resolve().parent.parent
-    / "learning_osmnx_networkx"
-    / "output"
-    / "graph.graphml"
+    / "data"
+    / "campus_552.graphml"
 )
 
 
@@ -25,6 +24,29 @@ class WktTests(unittest.TestCase):
 
     def test_parse_wkt_handles_empty(self):
         self.assertEqual(parse_wkt_linestring("not a linestring"), ())
+
+
+class RoadTypeTests(unittest.TestCase):
+    """highway 属性可能是列表字面量——真实数据里确实存在这种边。"""
+
+    def test_plain_value(self):
+        self.assertEqual(_first_road_type("residential"), "residential")
+
+    def test_none_falls_back(self):
+        self.assertEqual(_first_road_type(None), "residential")
+        self.assertEqual(_first_road_type(""), "residential")
+
+    def test_list_literal_takes_first_entry(self):
+        # 这是校园路网里真实出现的值（2 条边）
+        self.assertEqual(
+            _first_road_type("['unclassified', 'residential']"), "unclassified"
+        )
+
+    def test_double_quoted_list(self):
+        self.assertEqual(_first_road_type('["primary", "secondary"]'), "primary")
+
+    def test_comma_separated(self):
+        self.assertEqual(_first_road_type("trunk,primary"), "trunk")
 
 
 @unittest.skipUnless(GRAPHML.exists(), f"缺少数据文件 {GRAPHML}")
