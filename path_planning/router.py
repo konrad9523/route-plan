@@ -11,6 +11,7 @@ from time import perf_counter
 from .costs import CostModel
 from .geo import append_geometry
 from .models import Edge, Graph, RouteResult
+from .search_trace import TraceRecorder
 
 
 class NoRouteError(RuntimeError):
@@ -105,6 +106,7 @@ def plan_route(
     *,
     algorithm: str = "astar",
     cost_model: CostModel | None = None,
+    trace: bool = False,
 ) -> RouteResult:
     """规划 source 到 target 的路线。
 
@@ -145,6 +147,10 @@ def plan_route(
     queue_pushes = 1
     final_state: _State | None = None
     best_goal_cost = inf
+    # 未启用时 record_* 会立刻返回，热路径几乎没有开销
+    recorder = TraceRecorder(trace, algorithm=algorithm, preference=str(model.preference.value))
+    recorder.record_discover(source)
+    goal_step: int | None = None
 
     while queue:
         priority, current_cost, _, state = heappop(queue)
@@ -155,12 +161,14 @@ def plan_route(
         # 因此这个条件在第一次弹到终点时即成立。
         if priority > best_goal_cost:
             break
+        recorder.record_pop(state.node_id, current_cost, state.previous_edge_id)
         expanded_states += 1
         if state.node_id == target:
             # 注意：不能无条件覆盖，否则后弹出的、代价更高的终点状态会冲掉好答案。
             if current_cost < best_goal_cost:
                 final_state = state
                 best_goal_cost = current_cost
+                goal_step = len(recorder.trace.pop_order) - 1
             continue
 
         previous_edge = graph.edges.get(state.previous_edge_id)
@@ -177,6 +185,9 @@ def plan_route(
                 continue
             best[next_state] = new_cost
             parent[next_state] = (state, edge.edge_id)
+            # 只在"首次发现某个路口"时记一步。可视化只关心边界在哪，
+            # 重复松弛同一条边不必重复记录，否则事件数会翻好几倍。
+            recorder.record_discover(edge.to_node)
             priority = new_cost
             if algorithm == "astar":
                 priority += model.heuristic(graph, graph.node(edge.to_node), target_node)
@@ -188,6 +199,13 @@ def plan_route(
         raise NoRouteError(f"no route from {source} to {target}")
 
     edge_ids, node_ids, geometry, distance_m, duration_s = _reconstruct(graph, parent, final_state)
+    recorder.finish(
+        expanded_states=expanded_states,
+        queue_pushes=queue_pushes,
+        path_nodes=node_ids,
+        path_edges=edge_ids,
+        goal_step=goal_step,
+    )
     return RouteResult(
         status="ok",
         algorithm=algorithm,
@@ -202,4 +220,5 @@ def plan_route(
         expanded_states=expanded_states,
         queue_pushes=queue_pushes,
         planning_ms=elapsed_ms,
+        trace=recorder.trace if trace else None,
     )

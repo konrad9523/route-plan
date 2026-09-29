@@ -7,7 +7,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Iterable, Mapping
+from typing import TYPE_CHECKING, Iterable, Mapping
+
+if TYPE_CHECKING:  # 只用于类型标注，避免运行时循环导入
+    from .search_trace import SearchTrace
 
 Coordinate = tuple[float, float]
 
@@ -82,6 +85,9 @@ class RouteResult:
     expanded_states: int = 0
     queue_pushes: int = 0
     planning_ms: float = 0.0
+    #: 搜索过程记录。只有 ``plan_route(..., trace=True)`` 时才填充，
+    #: 批量基准测试默认不收集（见 search_trace.TraceRecorder）。
+    trace: "SearchTrace | None" = None
 
     def to_geojson(self) -> dict:
         """返回可直接交给 Leaflet/MapLibre 的 GeoJSON Feature。"""
