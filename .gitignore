@@ -28,5 +28,18 @@ desktop.ini
 # ===== 第三方参考代码（克隆下来的开源项目，不属于我们自己的代码）=====
 # 这些是学习参考资料，体积大、更新频繁，不进我们的版本库
 references/
+# Keep the project's own reference catalog while ignoring downloaded repositories.
+!docs/references/
+!docs/references/参考项目清单.md
 第三方代码/
 probe_*.py
+
+# OSRM native build output (kept at repository root to stay below Windows path limits)
+.osrm-build-vs2022/
+.valhalla-build-vs2022/
+
+# A3 local temporary workbench: received files, datasets and experiment artifacts stay untracked
+/A3_临时工作区/
+
+# Each collaborator's local-only drafts; shared work belongs in tracked project folders
+/个人工作区/
