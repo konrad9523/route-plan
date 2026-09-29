@@ -38,6 +38,13 @@ references/
 第三方代码/
 probe_*.py
 
+# ===== 已迁移数据的旧位置（防止用 git add -A 时误加）=====
+# learning_osmnx_networkx/route_demo.py 运行后会重新生成 output/graph.graphml，
+# 它与 data/campus_552.graphml 字节完全相同（sha256 ebbbec4fccd138b9），
+# 属于同一份路网的重复副本。正式路网只有 data/ 下那一份。
+# 注意：这些脚本本身在版本库里，只有生成物被忽略。
+learning_osmnx_networkx/output/*.graphml
+
 # OSRM native build output (kept at repository root to stay below Windows path limits)
 .osrm-build-vs2022/
 .valhalla-build-vs2022/
