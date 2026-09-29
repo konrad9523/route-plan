@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+# pip 因权限问题遗留在工作目录的临时目录（正常不该出现，出现了也别提交）
+pip-build-tracker-*/
+pip-download-*/
+pip-unpack-*/
 
 # ===== 虚拟环境 =====
 .venv/
