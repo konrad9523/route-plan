@@ -1,0 +1,4 @@
+osmnx>=2.0
+networkx>=3.2
+folium>=0.15
+

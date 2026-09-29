@@ -1,0 +1,28 @@
+# ===== Python 自动生成的缓存，不该进版本库 =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ===== 虚拟环境 =====
+.venv/
+venv/
+
+# ===== PyCharm / VS Code =====
+.idea/
+.vscode/
+
+# ===== OSM/地理编码下载缓存（可重新下载，体积大，不进版本库）=====
+cache/
+
+# ===== 临时实验文件（学习笔记里让你动手写的，不必提交）=====
+try_it.py
+_tmp_*.py
+_probe_*.py
+
+# ===== 系统垃圾文件 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+#第三方代码
