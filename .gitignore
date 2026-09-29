@@ -19,6 +19,10 @@ cache/
 tests/try_it.py
 _tmp_*.py
 _probe_*.py
+# Agent/手工调试用的一次性脚本；正式工具放 tools/ 并提交
+_check*.py
+_tree.py
+_lint.py
 
 # ===== 系统垃圾文件 =====
 .DS_Store

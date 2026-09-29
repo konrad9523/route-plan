@@ -114,7 +114,7 @@ python -c "from path_planning import load_graphml, check_heuristic_consistency; 
 
 ## 参与开发
 
-本项目由五人小组分工协作，角色划分为 **A1 数据 / A2 算法 / A3 性能 / A4 交互 / A5 验证**。
+本项目由五人小组分工协作，角色划分为 **A1 数据 / A2 算法 / A3 性能与测试 / A4 交互 / A5 演示材料**。
 
 **动手之前请先读** [`docs/operations/团队协作与项目管理原则.md`](docs/operations/团队协作与项目管理原则.md)，
 其中有三条核心提交规则和双层工作区制度。
