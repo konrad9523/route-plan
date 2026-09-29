@@ -29,3 +29,4 @@ desktop.ini
 # 这些是学习参考资料，体积大、更新频繁，不进我们的版本库
 references/
 第三方代码/
+probe_*.py
