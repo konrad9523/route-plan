@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>路径规划引擎 · 搜索过程可视化</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font: 14px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif; }
+  #app { display: flex; height: 100%; }
+
+  #map { flex: 1; background: #eef1f4; }
+  #side {
+    width: 320px; padding: 14px; overflow-y: auto;
+    background: #1e2430; color: #dfe5ee;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  #side h1 { font-size: 15px; margin: 0 0 4px; color: #fff; }
+  #side .hint { font-size: 12px; color: #93a0b4; margin: 0; }
+  .box { background: #28303f; border-radius: 6px; padding: 10px; }
+  .box h2 { font-size: 12px; margin: 0 0 8px; color: #9fb0c9; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .5px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row:last-child { margin-bottom: 0; }
+  .row label { width: 52px; font-size: 12px; color: #9fb0c9; }
+  select, button {
+    background: #38445a; color: #e8eef7; border: 1px solid #4a5872;
+    border-radius: 4px; padding: 5px 8px; font: inherit; font-size: 13px;
+  }
+  select { flex: 1; }
+  button { cursor: pointer; }
+  button:hover { background: #46557080; }
+  button.primary { background: #2f6fd0; border-color: #2f6fd0; }
+  button.primary:hover { background: #3a7fe6; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+
+  #stats { font-size: 12px; }
+  #stats div { display: flex; justify-content: space-between; padding: 2px 0; }
+  #stats span:last-child { color: #fff; font-variant-numeric: tabular-nums; }
+
+  .legend { display: flex; flex-direction: column; gap: 5px; font-size: 12px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%;
+              margin-right: 7px; vertical-align: -1px; }
+
+  #err { color: #ff9b9b; font-size: 12px; min-height: 18px; }
+  #scrub { width: 100%; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="map"></div>
+
+  <div id="side">
+    <div>
+      <h1>路径规划引擎</h1>
+      <p class="hint">在地图上点两下选起点和终点</p>
+    </div>
+
+    <div class="box">
+      <h2>起终点</h2>
+      <div class="row"><label>起点</label><span id="srcLabel" class="hint">未选择</span></div>
+      <div class="row"><label>终点</label><span id="dstLabel" class="hint">未选择</span></div>
+      <div class="row">
+        <button id="btnClear" style="flex:1">清空</button>
+        <button id="btnRoute" class="primary" style="flex:1" disabled>开始</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>算法设置</h2>
+      <div class="row">
+        <label>算法</label>
+        <select id="algorithm">
+          <option value="astar">A*</option>
+          <option value="dijkstra">Dijkstra</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>偏好</label>
+        <select id="preference">
+          <option value="fastest">最快</option>
+          <option value="shortest">最短</option>
+          <option value="avoid_tolls">避开收费</option>
+          <option value="no_highway">避开高速</option>
+        </select>
+      </div>
+      <div class="row">
+        <label style="width:auto"><input type="checkbox" id="traceOn" checked> 记录搜索过程</label>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>动画</h2>
+      <div class="row">
+        <button id="btnPlay" style="flex:1">▶ 播放</button>
+        <button id="btnReset" style="flex:1">⟲ 重置</button>
+      </div>
+      <div class="row"><input type="range" id="scrub" min="0" max="0" value="0"></div>
+      <div class="row">
+        <label>速度</label>
+        <select id="speed">
+          <option value="120">慢</option>
+          <option value="40" selected>正常</option>
+          <option value="12">快</option>
+          <option value="3">极快</option>
+        </select>
+        <span id="stepLabel" class="hint" style="width:auto">0 / 0</span>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>结果</h2>
+      <div id="stats"><div class="hint">还没有规划路线</div></div>
+    </div>
+
+    <div class="box">
+      <h2>图例</h2>
+      <div class="legend">
+        <div><i style="background:#5a6b85"></i>已访问节点</div>
+        <div><i style="background:#ff9d3d"></i>边界节点（待扩展）</div>
+        <div><i style="background:#37d67a"></i>最终路径</div>
+      </div>
+    </div>
+
+    <div id="err"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── 状态 ────────────────────────────────────────────────────────────────
+const state = {
+  nodeIds: [], nodeIndex: new Map(),   // OSM 节点 ID -> 位置下标
+  markers: [],                          // 每个路口一个 CircleMarker（复用，不重建）
+  src: null, dst: null,
+  result: null, trace: null,
+  step: 0, total: 0, playing: false, timer: null,
+  pathLayer: null, frontierSet: new Set(),
+};
+
+const COLORS = { base: "#5a6b85", visited: "#38455c", frontier: "#ff9d3d", path: "#37d67a" };
+
+// ── 地图 ────────────────────────────────────────────────────────────────
+// preferCanvas：552 个路口用 SVG 会卡，Canvas 渲染器明显更快
+const map = L.map("map", { preferCanvas: true, zoomControl: true });
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "&copy; OpenStreetMap contributors",
+}).addTo(map);
+
+function el(id) { return document.getElementById(id); }
+function fail(msg) { el("err").textContent = msg || ""; }
+function fmt(v, unit, digits = 1) {
+  return (v === null || v === undefined) ? "—" : v.toFixed(digits) + " " + unit;
+}
+
+// ── 初始化 ──────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const metaRes = await fetch("/api/meta");
+    if (!metaRes.ok) throw new Error("读取路网信息失败");
+    const meta = await metaRes.json();
+
+    const nodeRes = await fetch("/api/nodes");
+    const nodes = await nodeRes.json();
+    state.nodeIds = nodes.ids;
+    nodes.ids.forEach((id, i) => state.nodeIndex.set(id, i));
+
+    const b = meta.bbox;
+    map.fitBounds([[b.min_lat, b.min_lon], [b.max_lat, b.max_lon]], { padding: [20, 20] });
+
+    // 预建所有路口的圆点，之后只改样式、不重建——这是动画流畅的关键
+    for (let i = 0; i < nodes.ids.length; i++) {
+      const m = L.circleMarker([nodes.lats[i], nodes.lons[i]], {
+        radius: 3, color: "transparent", weight: 0,
+        fillColor: COLORS.base, fillOpacity: 0.55,
+      }).addTo(map);
+      m.on("click", () => onPickNode(nodes.ids[i]));
+      state.markers.push(m);
+    }
+    el("err").textContent = "";
+  } catch (e) {
+    fail("初始化失败：" + e.message);
+  }
+}
+
+// ── 选点 ────────────────────────────────────────────────────────────────
+function onPickNode(id) {
+  if (state.src === null || (state.src !== null && state.dst !== null)) {
+    state.src = id; state.dst = null;
+  } else {
+    state.dst = id;
+  }
+  updatePickUI();
+}
+
+function updatePickUI() {
+  el("srcLabel").textContent = state.src ?? "未选择";
+  el("dstLabel").textContent = state.dst ?? "未选择";
+  el("btnRoute").disabled = !(state.src !== null && state.dst !== null);
+  // 用路径色标出选中的起终点
+  state.markers.forEach((m, i) => {
+    const id = state.nodeIds[i];
+    if (id === state.src || id === state.dst) {
+      m.setStyle({ fillColor: COLORS.path, fillOpacity: 1, radius: 6 });
+    }
+  });
+}
+
+// ── 规划 ────────────────────────────────────────────────────────────────
+async function plan() {
+  if (state.src === null || state.dst === null) return;
+  stopPlayback();
+  fail("");
+  el("btnRoute").disabled = true;
+  el("btnRoute").textContent = "计算中…";
+
+  try {
+    const res = await fetch("/api/route", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source: state.src, target: state.dst,
+        algorithm: el("algorithm").value,
+        preference: el("preference").value,
+        trace: el("traceOn").checked,
+        max_steps: 600,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "规划失败");
+
+    state.result = data;
+    state.trace = data.trace || null;
+    renderStats();
+    drawFullPath();
+
+    if (state.trace) {
+      state.total = state.trace.pop_order.length;
+      el("scrub").max = state.total;
+      setStep(0);
+      el("btnPlay").disabled = false;
+      el("btnReset").disabled = false;
+    } else {
+      state.total = 0;
+      el("scrub").max = 0;
+      setStep(0);
+      el("btnPlay").disabled = true;
+      el("btnReset").disabled = true;
+    }
+  } catch (e) {
+    fail("规划失败：" + e.message);
+  } finally {
+    el("btnRoute").disabled = false;
+    el("btnRoute").textContent = "开始";
+  }
+}
+
+// ── 结果面板 ────────────────────────────────────────────────────────────
+function renderStats() {
+  const r = state.result;
+  const s = r.stats;
+  el("stats").innerHTML = `
+    <div><span>距离</span><span>${fmt(r.distance_m, "m")}</span></div>
+    <div><span>预计时间</span><span>${fmt(r.duration_s, "s")}</span></div>
+    <div><span>路段数</span><span>${r.edge_ids.length}</span></div>
+    <div><span>算法</span><span>${r.algorithm}</span></div>
+    <div><span>扩展节点</span><span>${s.expanded_states}</span></div>
+    <div><span>队列操作</span><span>${s.queue_pushes}</span></div>
+    <div><span>计算耗时</span><span>${s.planning_ms.toFixed(2)} ms</span></div>
+    ${state.trace ? `<div><span>动画步数</span><span>${state.total}${state.trace.stats.downsampled ? "（已降采样）" : ""}</span></div>` : ""}
+  `;
+}
+
+function drawFullPath() {
+  if (state.pathLayer) { map.removeLayer(state.pathLayer); state.pathLayer = null; }
+  const coords = state.result.geometry.map(p => [p[1], p[0]]);
+  state.pathLayer = L.polyline(coords, { color: COLORS.path, weight: 5, opacity: 0.9 }).addTo(map);
+}
+
+// ── 动画 ────────────────────────────────────────────────────────────────
+// 关键：不重建 marker，只改样式。同时只更新"发生变化"的那些。
+function setStep(step) {
+  state.step = step;
+  el("scrub").value = step;
+  el("stepLabel").textContent = `${step} / ${state.total}`;
+
+  if (!state.trace) return;
+  const tr = state.trace;
+  const visited = new Set(tr.pop_order.slice(0, step));
+
+  // 重建当前边界
+  const frontier = new Set();
+  for (let j = 0; j < tr.discovered_order.length; j++) {
+    if (tr.discovered_after_steps[j] <= step) {
+      const n = tr.discovered_order[j];
+      if (!visited.has(n)) frontier.add(n);
+    }
+  }
+
+  // 只更新状态变化的节点
+  const changed = new Set([...frontier, ...state.frontierSet]);
+  for (const id of changed) {
+    const i = state.nodeIndex.get(id);
+    if (i === undefined) continue;
+    const m = state.markers[i];
+    if (state.nodeIds[i] === state.src || state.nodeIds[i] === state.dst) continue;
+    if (frontier.has(id)) m.setStyle({ fillColor: COLORS.frontier, fillOpacity: 1, radius: 5 });
+    else m.setStyle({ fillColor: COLORS.visited, fillOpacity: 0.85, radius: 3 });
+  }
+  state.frontierSet = frontier;
+
+  // 路径在到达终点后才显示
+  if (state.pathLayer) {
+    const show = tr.stats.goal_step !== null && step >= tr.stats.goal_step;
+    state.pathLayer.setStyle({ opacity: show ? 0.9 : 0 });
+  }
+}
+
+function startPlayback() {
+  if (!state.total) return;
+  if (state.step >= state.total) setStep(0);
+  state.playing = true;
+  el("btnPlay").textContent = "⏸ 暂停";
+  const delay = parseInt(el("speed").value, 10);
+
+  const tick = () => {
+    if (!state.playing) return;
+    setStep(Math.min(state.total, state.step + 1));
+    if (state.step >= state.total) { stopPlayback(); return; }
+    state.timer = setTimeout(tick, delay);
+  };
+  state.timer = setTimeout(tick, delay);
+}
+
+function stopPlayback() {
+  state.playing = false;
+  if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+  el("btnPlay").textContent = "▶ 播放";
+}
+
+// ── 事件绑定 ────────────────────────────────────────────────────────────
+el("btnRoute").addEventListener("click", plan);
+el("btnClear").addEventListener("click", () => {
+  state.src = state.dst = null;
+  stopPlayback();
+  state.markers.forEach(m => m.setStyle({ fillColor: COLORS.base, fillOpacity: 0.55, radius: 3 }));
+  state.frontierSet = new Set();
+  if (state.pathLayer) { map.removeLayer(state.pathLayer); state.pathLayer = null; }
+  el("stats").innerHTML = '<div class="hint">还没有规划路线</div>';
+  el("btnPlay").disabled = true;
+  el("btnReset").disabled = true;
+  state.total = 0; setStep(0);
+  updatePickUI();
+});
+el("btnPlay").addEventListener("click", () => state.playing ? stopPlayback() : startPlayback());
+el("btnReset").addEventListener("click", () => { stopPlayback(); setStep(0); });
+el("scrub").addEventListener("input", e => { stopPlayback(); setStep(parseInt(e.target.value, 10)); });
+el("speed").addEventListener("change", () => { if (state.playing) { stopPlayback(); startPlayback(); } });
+el("traceOn").addEventListener("change", () => {
+  el("btnPlay").disabled = !el("traceOn").checked;
+});
+
+el("btnPlay").disabled = true;
+el("btnReset").disabled = true;
+init();
+</script>
+</body>
+</html>
