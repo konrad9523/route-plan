@@ -68,6 +68,7 @@ tests/              测试（56 项）
 data/               共享路网数据与说明
 docs/               项目文档（见 docs/README.md）
 workspaces/         五个角色的成果区
+tools/              自检脚本（文档结构、接口冒烟）
 learning_osmnx_networkx/  教学脚本与数据获取脚本
 ```
 
@@ -94,6 +95,12 @@ python -m uvicorn api.main:app --port 8080
 
 # 检查一张路网适不适合用 A*
 python -c "from path_planning import load_graphml, check_heuristic_consistency; g=load_graphml('data/campus_552.graphml'); print(len(check_heuristic_consistency(g)))"
+
+# 端到端接口冒烟测试（真实 HTTP，覆盖前端依赖的每个字段）
+python tools/smoke_api.py
+
+# 文档自检（代码围栏是否配对、角色目录树是否与磁盘一致）
+python tools/check_docs.py
 ```
 
 > ⚠️ **命令必须在仓库根目录执行**。`path_planning` 不是已安装的包，
