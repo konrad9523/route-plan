@@ -13,6 +13,7 @@
 | 内容 | 位置 | 用途 |
 |---|---|---|
 | **团队协作与项目管理原则** | [`团队协作与项目管理原则.md`](团队协作与项目管理原则.md) | **管理原则文件**：三条核心规则、双层工作区（本机草稿区 + Fork 成员工作区）、角色成果区制度、标准工作流程、禁止操作、GitHub 配置与命令速查 |
+| 旧版 GitHub 团队协作手册 | [`archive/GitHub团队协作入门与项目使用规范.md`](archive/GitHub团队协作入门与项目使用规范.md) | 历史存档，仅供对照；当前流程以本表上方的管理原则文件为准 |
 | 团队任务 Issue 模板 | [`../../.github/ISSUE_TEMPLATE/task.md`](../../.github/ISSUE_TEMPLATE/task.md) | 记录负责人、目标、验收标准、共享交付位置和依赖 |
 | Pull Request 模板 | [`../../.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md) | 记录变更目的、影响范围、测试证据和合并检查 |
 | 项目变更日志 | [`../../CHANGELOG.md`](../../CHANGELOG.md) | 汇总合并到共享仓库的版本变化 |
