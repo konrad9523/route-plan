@@ -1,0 +1,40 @@
+{
+  "graph_version": "campus-552-v1",
+  "source_file": "data/campus_552.graphml",
+  "crs": "EPSG:4326",
+  "distance_unit": "m",
+  "time_unit": "s",
+  "speed_unit": "km/h",
+  "vehicle_modes": [
+    "car"
+  ],
+  "node_count": 552,
+  "edge_count": 1400,
+  "largest_scc_node_count": 527,
+  "nodes_outside_largest_scc": 25,
+  "edges_with_geometry": 731,
+  "geometry_coverage": 0.5221,
+  "bbox": {
+    "min_lon": 114.3752911,
+    "min_lat": 30.5091614,
+    "max_lon": 114.4125917,
+    "max_lat": 30.5413952
+  },
+  "road_type_distribution": {
+    "residential": 852,
+    "unclassified": 317,
+    "tertiary": 107,
+    "secondary": 58,
+    "trunk": 34,
+    "primary": 12,
+    "living_street": 8,
+    "secondary_link": 7,
+    "trunk_link": 5
+  },
+  "length_over_straight_min": 1.0,
+  "length_over_straight_median": 1.0,
+  "heuristic_consistency_violations": 0,
+  "data_source": "OpenStreetMap via OSMnx 2.0.7",
+  "license": "ODbL 1.0 - (c) OpenStreetMap contributors",
+  "generated_by": "learning_osmnx_networkx/route_demo.py --dist 1800"
+}
