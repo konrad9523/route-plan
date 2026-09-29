@@ -8,6 +8,14 @@ pip-build-tracker-*/
 pip-download-*/
 pip-unpack-*/
 
+# uv 的缓存与工具目录（重建仓库时安装 filter-repo 会用到，见重建清单 §3.5）
+_uvcache/
+_uvtools/
+_uvbin/
+_frtest/
+_frtest_repo/
+_tmp/
+
 # ===== 虚拟环境 =====
 .venv/
 venv/
