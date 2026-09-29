@@ -280,7 +280,7 @@ class ContractionTrace:
 | `test_trace_on_real_network` | 真实 552 节点路网上的行为 |
 | `test_found_at_reconstruction` | 发现索引重建正确 |
 
-**全项目测试数：40**（router 7 + regressions 7 + osm_loader 8 + search_trace 18）。
+**全项目测试数：51**（router 7 + regressions 7 + osm_loader 8 + search_trace 18 + api 10）。
 
 ---
 
