@@ -16,7 +16,7 @@ venv/
 cache/
 
 # ===== 临时实验文件（学习笔记里让你动手写的，不必提交）=====
-try_it.py
+tests/try_it.py
 _tmp_*.py
 _probe_*.py
 
