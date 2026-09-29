@@ -257,7 +257,7 @@ class ContractionTrace:
 
 ## 7. 现有测试覆盖
 
-`tests/test_search_trace.py`，**18 个测试**（全部通过）。
+`tests/test_search_trace.py`，**19 个测试**（全部通过）。
 
 | 测试 | 守什么 |
 |---|---|
@@ -280,7 +280,7 @@ class ContractionTrace:
 | `test_trace_on_real_network` | 真实 552 节点路网上的行为 |
 | `test_found_at_reconstruction` | 发现索引重建正确 |
 
-**全项目测试数：51**（router 7 + regressions 7 + osm_loader 8 + search_trace 18 + api 10）。
+**全项目测试数：56**（router 7 + regressions 7 + osm_loader 13 + search_trace 19 + api 10）。
 
 ---
 
