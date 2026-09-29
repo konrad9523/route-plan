@@ -24,12 +24,19 @@ import sys
 import threading
 import time
 import urllib.request
+from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-import uvicorn
+# 支持 `python tools/smoke_api.py`：此时 sys.path[0] 是 tools/，导不到 api 包。
+# path_planning 与 api 都不是已安装的包，必须把仓库根目录放进 sys.path。
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-from api.main import app
+import uvicorn  # noqa: E402
+
+from api.main import app  # noqa: E402
 
 PORT = 8083
 threading.Thread(
