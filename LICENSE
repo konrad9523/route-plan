@@ -1,0 +1,39 @@
+MIT License
+
+Copyright (c) 2026 路径规划引擎组（G4）
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## 适用范围说明
+
+本许可证**仅覆盖本项目自行编写的代码与文档**。
+
+**不覆盖**以下内容，它们各有其许可条款：
+
+| 内容 | 许可 | 说明 |
+|---|---|---|
+| 路网数据（`data/`） | **ODbL 1.0** | 来自 OpenStreetMap，© OpenStreetMap contributors |
+| 地图底图瓦片 | OpenStreetMap 瓦片使用政策 | 由 OpenStreetMap 在线提供 |
+| 课程课件 | 未随本仓库分发 | 课程资料，授权情况需自行确认 |
+| 下载到本机被忽略目录的第三方源码 | 各自原许可 | `references/`、`第三方代码/` 等目录不进入版本库 |
+
+> ⚠️ **待确认**：本文件默认采用 MIT。若课程或组内对授权另有要求
+> （例如要求使用 Apache-2.0、GPL，或要求特定署名方式），请替换本文件内容。
