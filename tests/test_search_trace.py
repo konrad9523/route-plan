@@ -11,9 +11,8 @@ from path_planning.search_trace import SearchTrace, TraceRecorder
 
 GRAPHML = (
     Path(__file__).resolve().parent.parent
-    / "learning_osmnx_networkx"
-    / "output"
-    / "graph.graphml"
+    / "data"
+    / "campus_552.graphml"
 )
 
 

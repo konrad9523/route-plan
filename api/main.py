@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 from path_planning import CostModel, Graph, NoRouteError, Preference, load_graphml, plan_route
 
 ROOT = Path(__file__).resolve().parent.parent
-GRAPHML_PATH = ROOT / "learning_osmnx_networkx" / "output" / "graph.graphml"
+GRAPHML_PATH = ROOT / "data" / "campus_552.graphml"
 WEB_DIR = ROOT / "web"
 
 app = FastAPI(

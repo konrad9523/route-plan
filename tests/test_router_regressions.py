@@ -118,9 +118,8 @@ class HeuristicConsistencyTests(unittest.TestCase):
 
         graphml = (
             Path(__file__).resolve().parent.parent
-            / "learning_osmnx_networkx"
-            / "output"
-            / "graph.graphml"
+            / "data"
+            / "campus_552.graphml"
         )
         if not graphml.exists():
             self.skipTest("缺少真实路网数据")
