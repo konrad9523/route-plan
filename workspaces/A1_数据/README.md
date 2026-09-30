@@ -24,7 +24,7 @@
 | 成果类型 | 位置 | 说明 |
 |---|---|---|
 | **实际数据文件** | `/data/` | 唯一正式位置（本区不放数据副本） |
-| **数据获取与转换脚本** | `/path_planning/` 或 `/learning_osmnx_networkx/` | 可复现的生成代码 |
+| **数据获取与转换脚本** | `/src/path_planning/` 或 `/docs/learning/osmnx_demo/` | 可复现的生成代码 |
 | **数据说明、质量报告** | `/docs/validation/` 或本区 | 正式结论进 docs |
 | **本区（成果索引）** | `本目录` | 汇总索引，方便其他角色快速了解 |
 
@@ -55,7 +55,7 @@ workspaces/A1_数据/
 | 覆盖范围 | 中国地质大学（武汉）周边约 3.7 × 3.6 km |
 | 来源 | OSMnx 从 OpenStreetMap 抓取，2026-09-15 |
 | 许可 | ODbL，© OpenStreetMap contributors |
-| 生成命令 | `python learning_osmnx_networkx/route_demo.py --dist 1800` |
+| 生成命令 | `python docs/learning/osmnx_demo/route_demo.py --dist 1800` |
 | 存储位置 | `data/campus_552.graphml` |
 | 已知限制 | 约 48% 的边没有 geometry；25 个节点不在最大强连通分量内 |
 
@@ -115,12 +115,29 @@ workspaces/A1_数据/
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| 校园路网（552 节点）接入 | ✅ 已完成 | `path_planning/osm_loader.py`，8 个测试 |
+| 校园路网（552 节点）接入 | ✅ 已完成 | `src/path_planning/osm_loader.py`，8 个测试 |
 | 数据质量体检 | ⚠️ 部分 | 已知连通性（527/552）与几何覆盖率（731/1400），未整理成文档 |
-| `data/` 目录与说明 | ❌ 未做 | 当前数据仍在 `learning_osmnx_networkx/output/` |
-| `graph_meta.json` | ❌ 未做 | 接口契约里要求过，尚未生成 |
-| 城市级路网（>10 万节点） | ❌ 未开始 | **作业 2 的硬指标** |
+| `data/` 目录与说明 | ✅ 已完成 | 数据在 `data/campus_552.graphml`；说明见 `data/README.md` |
+| `graph_meta.json` | ✅ 已完成 | `data/graph_meta.json` |
+| **城市级路网（>10 万节点）** | **✅ 数据已下载，未接入** | **武汉路网 91,638 节点 / 206,383 边**，见下方说明——**作业 2 的硬指标** |
 | CSR 压缩图 | ❌ 未开始 | 10 万节点内存优化的关键 |
+
+> ### 📌 城市级路网数据已存在（此前未被记录）
+>
+> **武汉路网已经下载并处理过**，此前只存在本机忽略目录里，别的角色不知道有它：
+>
+> | 项 | 值 |
+> |---|---|
+> | 原始文件 | `wuhan_drive.osm`（56.7 MB，**未纳入版本库**） |
+> | 规模 | **91,638 节点 / 206,383 有向边**（校园网的 166 倍） |
+> | 来源 | Overpass API，武汉市全部道路（`admin_level=5`） |
+> | 校验 | SHA256 `FC2DD2990DE7C8FA8B4A50D25AE8A8D80A9729BB5AB77D062657F4C471E288A2` |
+> | 连通性 | 最大连通分量 91,065；孤立点 5 |
+> | 几何 | 违规 0；平均绕行比 1.0674 |
+>
+> **待办**：A1 需要把它正式接入（写清复现命令与元信息），
+> 并决定是否把压缩后的数据放进 `data/` 或发布页。
+> 详见 [`data/README.md`](../../data/README.md)。
 
 ---
 
@@ -139,7 +156,7 @@ workspaces/A1_数据/
 
 1. 在**本机草稿区**（`个人工作区/A1/`）做实验和整理
 2. 确认成果类型：
-   - 是**代码/数据/正式文档** → 提交到正式位置（`/data/`、`/path_planning/`、`/docs/`）
+   - 是**代码/数据/正式文档** → 提交到正式位置（`/data/`、`/src/path_planning/`、`/docs/`）
    - 是**索引/结论/说明** → 提交到本区
 3. 更新本文件的"当前状态"表
 4. 走分支 + PR，请至少一位非作者审查

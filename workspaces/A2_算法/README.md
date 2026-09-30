@@ -23,13 +23,13 @@
 
 | 成果类型 | 位置 | 说明 |
 |---|---|---|
-| **算法代码** | `/path_planning/` | 唯一正式位置 |
+| **算法代码** | `/src/path_planning/` | 唯一正式位置 |
 | **测试** | `/tests/` | 对拍、边界用例、回归测试 |
 | **接口契约** | `/docs/development/` | 如 SearchTrace 接口规格 |
 | **设计说明、实验结论** | `/docs/development/` 或本区 | |
 | **本区（成果索引）** | `本目录` | 让其他角色不读代码就知道算法做到什么程度 |
 
-**防重复规则**：本区不放代码副本。用相对链接指向 `/path_planning/`。
+**防重复规则**：本区不放代码副本。用相对链接指向 `/src/path_planning/`。
 
 ---
 
@@ -127,7 +127,7 @@ workspaces/A2_算法/
 ## 六、怎么往这里加成果
 
 1. 在**本机草稿区**（`个人工作区/A2/`）做实验
-2. 代码进 `/path_planning/`，测试进 `/tests/`，正式说明进 `/docs/development/`
+2. 代码进 `/src/path_planning/`，测试进 `/tests/`，正式说明进 `/docs/development/`
 3. 索引与结论更新到本区（尤其是"当前状态"表）
 4. 走分支 + PR，请至少一位非作者审查
 5. 在 `CHANGELOG.md` 记一条

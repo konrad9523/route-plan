@@ -1,5 +1,7 @@
 """API 的测试：用 FastAPI TestClient，不需要真的起服务器。"""
 
+import _bootstrap  # noqa: F401  (把 src/ 加入 sys.path)
+
 import unittest
 
 from fastapi.testclient import TestClient

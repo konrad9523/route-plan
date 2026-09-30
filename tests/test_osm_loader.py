@@ -1,5 +1,7 @@
 """osm_loader 的测试：把真实 GraphML 读成 path_planning.Graph。"""
 
+import _bootstrap  # noqa: F401  (把 src/ 加入 sys.path)
+
 import unittest
 from pathlib import Path
 

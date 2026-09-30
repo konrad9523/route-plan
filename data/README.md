@@ -27,7 +27,7 @@
 | 来源 | OpenStreetMap，经 OSMnx 2.0.7 抓取 |
 | 抓取时间 | 2026-09-15 |
 | 许可 | **ODbL 1.0**，© OpenStreetMap contributors |
-| 生成命令 | `python learning_osmnx_networkx/route_demo.py --dist 1800` |
+| 生成命令 | `python docs/learning/osmnx_demo/route_demo.py --dist 1800` |
 
 ### 字段与单位
 
@@ -63,7 +63,7 @@
 |---|---|---|
 | HTTP 服务 | `api/main.py` | 加载路网提供服务 |
 | 测试 | `tests/test_osm_loader.py`、`test_router_regressions.py`、`test_search_trace.py` | 真实路网测试 |
-| 数据加载器 | `path_planning/osm_loader.py` | GraphML → `Graph` |
+| 数据加载器 | `src/path_planning/osm_loader.py` | GraphML → `Graph` |
 
 ### 更新这份数据时
 
@@ -78,7 +78,7 @@
 
 ---
 
-## 关于 `learning_osmnx_networkx/output/`
+## 关于 `docs/learning/osmnx_demo/output/`
 
 那个目录里的 `graph.graphml` 是**下载脚本的原始产出**，与 `data/campus_552.graphml` 内容相同。
 

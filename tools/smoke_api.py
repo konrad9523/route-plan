@@ -29,10 +29,14 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 # 支持 `python tools/smoke_api.py`：此时 sys.path[0] 是 tools/，导不到 api 包。
-# path_planning 与 api 都不是已安装的包，必须把仓库根目录放进 sys.path。
+# path_planning 与 api 都不是已安装的包：
+#   - path_planning 在 src/ 下
+#   - api 在仓库根目录下
+# 两者都要显式加进 sys.path。
 ROOT = Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+for _p in (ROOT / "src", ROOT):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 import uvicorn  # noqa: E402
 

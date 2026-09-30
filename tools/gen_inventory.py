@@ -15,8 +15,8 @@ DOC = Path("docs/operations/重建干净仓库操作清单.md")
 files = sorted(subprocess.run(["git", "ls-files"], capture_output=True, text=True,
                               encoding="utf-8").stdout.splitlines())
 
-ORDER = ["(根文件)", ".github/", "path_planning/", "api/", "web/", "tests/",
-         "data/", "docs/", "workspaces/", "tools/", "learning_osmnx_networkx/"]
+ORDER = ["(根文件)", ".github/", "src/", "api/", "web/", "tests/",
+         "data/", "docs/", "workspaces/", "tools/"]
 LABEL = {"(根文件)": "根文件（`.gitignore`、`CHANGELOG.md`、`LICENSE`、`README.md`）"}
 
 

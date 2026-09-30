@@ -36,5 +36,5 @@
   "heuristic_consistency_violations": 0,
   "data_source": "OpenStreetMap via OSMnx 2.0.7",
   "license": "ODbL 1.0 - (c) OpenStreetMap contributors",
-  "generated_by": "learning_osmnx_networkx/route_demo.py --dist 1800"
+  "generated_by": "docs/learning/osmnx_demo/route_demo.py --dist 1800"
 }

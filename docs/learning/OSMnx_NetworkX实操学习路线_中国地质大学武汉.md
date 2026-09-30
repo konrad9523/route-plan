@@ -62,7 +62,7 @@ NetworkX 负责图算法
 目前已经创建了：
 
 ~~~text
-learning_osmnx_networkx/
+docs/learning/osmnx_demo/
 ├── README.md
 ├── requirements.txt
 ├── route_demo.py
@@ -109,7 +109,7 @@ python -m venv .venv
 ### 3.2 安装依赖
 
 ~~~powershell
-python -m pip install -r learning_osmnx_networkx/requirements.txt
+python -m pip install -r docs/learning/osmnx_demo/requirements.txt
 ~~~
 
 依赖主要包括：
@@ -135,7 +135,7 @@ python -c "import osmnx, networkx, folium; print(osmnx.__version__, networkx.__v
 在项目根目录执行：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py
+python docs/learning/osmnx_demo/route_demo.py
 ~~~
 
 程序会：
@@ -154,7 +154,7 @@ python learning_osmnx_networkx/route_demo.py
 打开：
 
 ~~~text
-learning_osmnx_networkx/output/route_demo.html
+docs/learning/osmnx_demo/output/route_demo.html
 ~~~
 
 第一次运行不需要急着修改代码，先观察结果。
@@ -206,9 +206,9 @@ learning_osmnx_networkx/output/route_demo.html
 负责读取命令行参数：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py --network-type bike
-python learning_osmnx_networkx/route_demo.py --weight length
-python learning_osmnx_networkx/route_demo.py --dist 2500
+python docs/learning/osmnx_demo/route_demo.py --network-type bike
+python docs/learning/osmnx_demo/route_demo.py --weight length
+python docs/learning/osmnx_demo/route_demo.py --dist 2500
 ~~~
 
 你应该理解：
@@ -336,9 +336,9 @@ print(edges["highway"].value_counts().head(20))
 依次运行：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py --network-type drive
-python learning_osmnx_networkx/route_demo.py --network-type bike
-python learning_osmnx_networkx/route_demo.py --network-type walk
+python docs/learning/osmnx_demo/route_demo.py --network-type drive
+python docs/learning/osmnx_demo/route_demo.py --network-type bike
+python docs/learning/osmnx_demo/route_demo.py --network-type walk
 ~~~
 
 每次都记录：
@@ -374,15 +374,15 @@ python learning_osmnx_networkx/route_demo.py --network-type walk
 运行：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py --weight length
-python learning_osmnx_networkx/route_demo.py --weight travel_time
+python docs/learning/osmnx_demo/route_demo.py --weight length
+python docs/learning/osmnx_demo/route_demo.py --weight travel_time
 ~~~
 
 当前程序会覆盖 output 中的结果文件。如果要保留两次实验，可以复制：
 
 ~~~powershell
-Copy-Item learning_osmnx_networkx/output/route_demo.html learning_osmnx_networkx/output/route_length.html
-Copy-Item learning_osmnx_networkx/output/route_summary.json learning_osmnx_networkx/output/summary_length.json
+Copy-Item docs/learning/osmnx_demo/output/route_demo.html docs/learning/osmnx_demo/output/route_length.html
+Copy-Item docs/learning/osmnx_demo/output/route_summary.json docs/learning/osmnx_demo/output/summary_length.json
 ~~~
 
 然后运行时间最短模式，再复制为 time 版本。
@@ -419,7 +419,7 @@ Copy-Item learning_osmnx_networkx/output/route_summary.json learning_osmnx_netwo
 当前程序自动选择两个节点。下一步增加命令行坐标：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py --origin-lon 114.3938 --origin-lat 30.5253 --destination-lon 114.4050 --destination-lat 30.5300
+python docs/learning/osmnx_demo/route_demo.py --origin-lon 114.3938 --origin-lat 30.5253 --destination-lon 114.4050 --destination-lat 30.5300
 ~~~
 
 实现思路：
@@ -1056,7 +1056,7 @@ Folium Marker = [纬度, 经度]
 推荐建立：
 
 ~~~text
-learning_osmnx_networkx/
+docs/learning/osmnx_demo/
 ├── notes/
 │   ├── 01_first_run.md
 │   ├── 02_graph_structure.md
@@ -1098,7 +1098,7 @@ learning_osmnx_networkx/
 当前第一步就是运行：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py
+python docs/learning/osmnx_demo/route_demo.py
 ~~~
 
 然后开始修改起点终点，而不是马上跳到 DEM 或智能体。
@@ -1109,5 +1109,5 @@ python learning_osmnx_networkx/route_demo.py
 - docs/project/初步了解本组任务.md 是组员共享方案，解决“项目要做什么和如何分工”；
 - docs/project/GIS导航系统全景与路径规划研究报告.md 是资料和架构报告，解决“为什么这样设计”；
 - docs/development/路径规划模块开发说明.md 是当前自研算法代码说明；
-- learning_osmnx_networkx 是真实 OSM 数据练习项目。
+- `docs/learning/osmnx_demo/` 是真实 OSM 数据练习项目（`route_demo.py` 与配套说明）。
 

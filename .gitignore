@@ -1,3 +1,21 @@
+# ===== 环境配置与密钥（最容易误提交的一类）=====
+# 只允许提交不含秘密的样例文件 .env.example / .env.sample
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+# 常见凭据文件
+*.pem
+*.key
+secrets.*
+credentials.*
+
+# ===== 本机备份目录（不要误当成成果提交）=====
+# 历史改写前的备份；建议放到仓库外，放在仓库内时至少别提交
+_git_backup/
+_backup*.bundle
+
 # ===== Python 自动生成的缓存，不该进版本库 =====
 __pycache__/
 *.py[cod]
@@ -52,12 +70,14 @@ references/
 第三方代码/
 probe_*.py
 
-# ===== 已迁移数据的旧位置（防止用 git add -A 时误加）=====
-# learning_osmnx_networkx/route_demo.py 运行后会重新生成 output/graph.graphml，
-# 它与 data/campus_552.graphml 字节完全相同（sha256 ebbbec4fccd138b9），
-# 属于同一份路网的重复副本。正式路网只有 data/ 下那一份。
-# 注意：这些脚本本身在版本库里，只有生成物被忽略。
-learning_osmnx_networkx/output/*.graphml
+# ===== 教学脚本的产出目录（生成物，不进版本库）=====
+# docs/learning/osmnx_demo/route_demo.py 运行后会重新生成 output/ 下的三个文件：
+#   graph.graphml      与 data/campus_552.graphml 内容相同（同一份路网的副本）
+#   route_demo.html    folium 生成的地图页面（约 28 KB）
+#   route_summary.json 路线摘要
+# 三者都是产出，留下脚本与说明即可——跑一遍就有。
+# 脚本本身仍正常跟踪，只忽略它的产出目录。
+docs/learning/osmnx_demo/output/
 
 # OSRM native build output (kept at repository root to stay below Windows path limits)
 .osrm-build-vs2022/
