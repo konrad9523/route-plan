@@ -32,26 +32,36 @@
 - [ ] 已请求至少一位非作者组员审查
 
 <details>
-<summary>怎么确认没带进 <code>member_workspaces/</code>（点开）</summary>
+<summary><b>发 PR 前必须检查整个分支</b>（点开看命令与原因）</summary>
 
-`.gitignore` **不能**把已提交的文件从 PR 中排除——它只影响未跟踪文件。
-所以必须在**建分支时**就分开（见管理原则 §2.4.1）：
+`git diff --cached` 只比较"暂存区 vs HEAD"，**它回答不了"这个 PR 要合入什么"**。
+内容一旦提交、暂存区为空，它可能毫无输出——即使分支上带着草稿提交。
+
+**正确做法：比较分支与上游基线（注意三点号）**
 
 ```powershell
-# 交付分支必须从 upstream/main 建，而不是从 workspace/<成员> 建
 git fetch upstream
-git switch -c feature/<成员>-<任务> upstream/main
-
-# 推 PR 之前再看一眼文件清单
-git diff --cached --stat | Select-String "member_workspaces|个人工作区"
-#    应无输出
-
-# 若整个 PR 的文件清单：
-git diff --name-only upstream/main...HEAD
+git diff --name-status upstream/main...HEAD   # 这次要合入哪些文件
+git log --oneline upstream/main..HEAD         # 分支带了哪些提交
+git diff --check upstream/main...HEAD         # 尾随空格等低级问题
+git diff upstream/main...HEAD                 # 逐行内容
 ```
 
-如果已经带进来了：**不要**用 `git rm --cached` 掩盖（文件仍在分支历史里）。
-正确做法是从 `upstream/main` 重建一条干净分支，只挑该交付的文件。
+**为什么必须这样查**（真实反例）：
+第一次提交误加了 `member_workspaces/A3/`，第二次提交是正常代码。
+两次提交之后查暂存区——**清单是空的**，但草稿仍在分支差异里，会一起进 PR。
+
+> `.gitignore` **不能**把已提交的文件从 PR 中排除——它只影响未跟踪文件。
+
+**如果已经带进来了**：不要用 `git rm --cached` 掩盖（文件仍留在分支历史里）。
+正确做法是从 `upstream/main` 重建一条干净分支，只挑该交付的文件（见管理原则 §2.4.1）。
+
+### 怎么确认没带进 `member_workspaces/`
+
+```powershell
+git diff --name-only upstream/main...HEAD | Select-String "member_workspaces|个人工作区"
+#    应无输出
+```
 
 </details>
 
