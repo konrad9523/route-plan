@@ -15,7 +15,7 @@ OpenStreetMap 数据
 在项目根目录执行：
 
 ~~~powershell
-python -m pip install -r learning_osmnx_networkx/requirements.txt
+python -m pip install -r docs/learning/osmnx_demo/requirements.txt
 ~~~
 
 ## 2. 运行
@@ -23,40 +23,40 @@ python -m pip install -r learning_osmnx_networkx/requirements.txt
 默认以中国地质大学（武汉）为中心，请求半径 1800 米的校园及周边道路：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py
+python docs/learning/osmnx_demo/route_demo.py
 ~~~
 
 也可以指定区域：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py --place "China University of Geosciences, Wuhan, China"
+python docs/learning/osmnx_demo/route_demo.py --place "China University of Geosciences, Wuhan, China"
 ~~~
 
 也可以调整抓取半径：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py --dist 2500
+python docs/learning/osmnx_demo/route_demo.py --dist 2500
 ~~~
 
 指定出行方式：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py --network-type bike
+python docs/learning/osmnx_demo/route_demo.py --network-type bike
 ~~~
 
 程序会在当前目录生成：
 
-- learning_osmnx_networkx/output/route_demo.html：路线地图；
-- learning_osmnx_networkx/output/graph.graphml：保存的道路图；
-- learning_osmnx_networkx/output/route_summary.json：路线统计。
+- docs/learning/osmnx_demo/output/route_demo.html：路线地图；
+- docs/learning/osmnx_demo/output/graph.graphml：保存的道路图；
+- docs/learning/osmnx_demo/output/route_summary.json：路线统计。
 
 ## 3. 这个练习要观察什么
 
 先分别运行：
 
 ~~~powershell
-python learning_osmnx_networkx/route_demo.py --weight length
-python learning_osmnx_networkx/route_demo.py --weight travel_time
+python docs/learning/osmnx_demo/route_demo.py --weight length
+python docs/learning/osmnx_demo/route_demo.py --weight travel_time
 ~~~
 
 然后比较：

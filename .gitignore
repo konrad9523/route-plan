@@ -1,3 +1,21 @@
+# ===== 环境配置与密钥（最容易误提交的一类）=====
+# 只允许提交不含秘密的样例文件 .env.example / .env.sample
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+# 常见凭据文件
+*.pem
+*.key
+secrets.*
+credentials.*
+
+# ===== 本机备份目录（不要误当成成果提交）=====
+# 历史改写前的备份；建议放到仓库外，放在仓库内时至少别提交
+_git_backup/
+_backup*.bundle
+
 # ===== Python 自动生成的缓存，不该进版本库 =====
 __pycache__/
 *.py[cod]
