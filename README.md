@@ -10,7 +10,11 @@
 
 ## 快速开始
 
-需要 Python 3.10 以上。**下面的命令都在仓库根目录执行**。
+需要 **Python 3.10 以上**。
+
+### 方式一：直接跑（不安装，最少步骤）
+
+**下面两条命令都在仓库根目录执行**：
 
 ```powershell
 python -m unittest discover -s tests -v          # 跑测试（56 项）
@@ -19,9 +23,47 @@ python -m uvicorn api.main:app --port 8077       # 启动可视化服务
 
 然后浏览器打开 <http://127.0.0.1:8077>：点两下选起终点 → 点「开始」算路 → 点「播放」看搜索动画。
 
-> 启动服务需要在根目录，是因为 `api/` 在根目录下；
-> 而 `path_planning` 在 `src/` 下，测试与脚本已通过
+> **核心算法零第三方依赖**，所以跑测试不需要装任何东西。
+> `path_planning` 在 `src/` 下，测试与脚本已通过
 > [`tests/_bootstrap.py`](tests/_bootstrap.py) 自动处理，不必手工设 `PYTHONPATH`。
+> 但**必须在仓库根目录执行**——这是唯一的要求。
+
+### 方式二：安装成包（想在任意目录运行 / 用 IDE 更好补全）
+
+```powershell
+# 1) 建虚拟环境（可选但推荐）
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# 2) 安装核心包（零依赖）
+python -m pip install -e .
+
+# 3) 需要 HTTP 服务或跑测试时，装上对应依赖
+python -m pip install -e ".[api,test]"
+
+# 4) 需要教学脚本（osmnx/folium，较重）时
+python -m pip install -e ".[demo]"
+```
+
+装好之后，**在任何目录**都能 `import path_planning`（IDE 补全、脚本复用都方便）：
+
+```powershell
+python -c "import path_planning; print(path_planning.__file__)"
+```
+
+> 依赖声明见 [`pyproject.toml`](pyproject.toml)：
+> `dependencies = []` 是**刻意留空的**——核心算法只用标准库，
+> fastapi/uvicorn 属于 `api` 可选组，osmnx 属于 `demo` 可选组。
+>
+> ⚠️ **但启动服务仍然必须在仓库根目录**，安装并不能改变这一点。
+> 原因有两个，都实测确认过：
+>
+> 1. `api/` **不在安装的包范围内**（它是仓库里的脚本目录，不是库），
+>    从别处执行 `python -m uvicorn api.main:app` 会报
+>    `ModuleNotFoundError: No module named 'api'`
+> 2. 服务按**相对仓库根**的路径读 `data/campus_552.graphml` 与 `web/index.html`
+>
+> 也就是说：**安装解决的是"导入 path_planning"，不是"换目录运行服务"。**
 
 ---
 

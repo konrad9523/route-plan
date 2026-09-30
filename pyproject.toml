@@ -1,0 +1,47 @@
+[build-system]
+# 用 setuptools：本机已有（79.0.1），不引入额外构建依赖。
+# 注意：这里【不】声明 hatchling/flit 等，避免多装东西。
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "path-planning"
+version = "0.1.0"
+description = "G4 路径规划引擎：真实 OSM 路网上的 Dijkstra / A* 与搜索过程可视化"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+# ★ 核心算法保持零第三方依赖——只用 Python 标准库。
+#   这是本项目的硬约束（见 docs/development/路径规划模块开发说明.md），
+#   所以这里 dependencies 必须为空。
+dependencies = []
+
+[project.optional-dependencies]
+# HTTP 服务层（api/）需要
+api = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+]
+# 跑测试需要（TestClient 随 fastapi 提供，这里只列显式的）
+test = [
+    "fastapi>=0.110",
+]
+# 教学脚本 docs/learning/osmnx_demo/ 需要（较重，按需安装）
+demo = [
+    "osmnx>=2.0",
+    "networkx>=3.2",
+    "folium>=0.15",
+]
+
+[tool.setuptools]
+# 源码在 src/ 布局下；只打包核心算法包。
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["path_planning*"]
+
+[tool.setuptools.package-data]
+# 核心包目前不含数据文件；校园路网在仓库根的 data/，不随包分发。
+path_planning = ["py.typed"]
