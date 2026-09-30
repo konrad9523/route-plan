@@ -1,3 +1,5 @@
+import _bootstrap  # noqa: F401  (把 src/ 加入 sys.path)
+
 import unittest
 
 from path_planning.costs import CostModel, Preference

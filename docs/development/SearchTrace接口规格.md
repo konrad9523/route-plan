@@ -22,7 +22,7 @@ plan_route(..., trace=True)  →  RouteResult.trace  →  trace.state_at(k)  →
 ```python
 from path_planning import load_graphml, plan_route, CostModel, Preference
 
-graph = load_graphml("learning_osmnx_networkx/output/graph.graphml")
+graph = load_graphml("docs/learning/osmnx_demo/output/graph.graphml")
 result = plan_route(
     graph, source, target,
     algorithm="astar",

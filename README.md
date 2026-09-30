@@ -10,7 +10,7 @@
 
 ## 快速开始
 
-需要 Python 3.10 以上。
+需要 Python 3.10 以上。**下面的命令都在仓库根目录执行**。
 
 ```powershell
 python -m unittest discover -s tests -v          # 跑测试（56 项）
@@ -18,6 +18,10 @@ python -m uvicorn api.main:app --port 8077       # 启动可视化服务
 ```
 
 然后浏览器打开 <http://127.0.0.1:8077>：点两下选起终点 → 点「开始」算路 → 点「播放」看搜索动画。
+
+> 启动服务需要在根目录，是因为 `api/` 在根目录下；
+> 而 `path_planning` 在 `src/` 下，测试与脚本已通过
+> [`tests/_bootstrap.py`](tests/_bootstrap.py) 自动处理，不必手工设 `PYTHONPATH`。
 
 ---
 
@@ -36,15 +40,24 @@ python -m uvicorn api.main:app --port 8077       # 启动可视化服务
 ## 目录结构
 
 ```text
-path_planning/   规划内核（纯标准库）
-api/             HTTP 服务（FastAPI）
-web/             前端页面（Leaflet）
-tests/           测试
-data/            路网数据
-docs/            项目文档
-workspaces/      五个角色的成果区
-tools/           自检脚本
+src/path_planning/   规划内核（纯标准库，算法的唯一正式位置）
+api/                 HTTP 服务（FastAPI）
+web/                 前端页面（Leaflet）
+tests/               测试
+tools/               自检脚本
+data/                路网数据
+docs/                项目文档
+docs/learning/osmnx_demo/   OSMnx 教学脚本（真实 OSM 数据练习）
+workspaces/          五个角色的成果区
 ```
+
+> **为什么 `path_planning` 在 `src/` 下**：源码与文档、数据、脚本混在根目录时
+> 分不清哪些是"产品代码"。放进 `src/` 后根目录只剩四类东西——
+> **源码、测试、数据、文档**。
+>
+> 包名没有变（`import path_planning` 照旧），但**它不在仓库根目录了**，
+> 所以测试与脚本需要先让 `src/` 进入 `sys.path`：
+> 测试已统一通过 [`tests/_bootstrap.py`](tests/_bootstrap.py) 处理，无需你操心。
 
 ---
 

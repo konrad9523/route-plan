@@ -1,5 +1,7 @@
 """SearchTrace 的测试：搜索过程记录、状态重建、降采样、开销。"""
 
+import _bootstrap  # noqa: F401  (把 src/ 加入 sys.path)
+
 import json
 import unittest
 from pathlib import Path

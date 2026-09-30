@@ -4,6 +4,8 @@
 缺陷 2：A* 在几何不自洽的图上静默返回次优路径
 """
 
+import _bootstrap  # noqa: F401  (把 src/ 加入 sys.path)
+
 import unittest
 
 from path_planning.costs import CostModel, Preference
