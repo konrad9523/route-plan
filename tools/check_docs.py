@@ -161,6 +161,36 @@ print("  总体: " + ("全部一致 OK" if allok else "存在不一致"))
 
 print()
 print("=" * 62)
+print("3. Markdown 相对链接是否指向存在的文件")
+print("=" * 62)
+LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+md_files = [p for p in files if p.suffix == ".md"]
+link_total = 0
+link_bad = 0
+for md in md_files:
+    try:
+        text = md.read_text(encoding="utf-8", errors="strict")
+    except (OSError, UnicodeDecodeError):
+        continue
+    for m in LINK.finditer(text):
+        target = m.group(1).strip()
+        if target.startswith(("http://", "https://", "mailto:", "#", "tel:")):
+            continue
+        rel = target.split("#", 1)[0].strip()
+        if not rel:
+            continue
+        link_total += 1
+        if not (md.parent / rel).exists():
+            print(f"  ❌ {md}  ->  {target}")
+            fail(f"坏链接: {md} -> {target}")
+            link_bad += 1
+if link_bad == 0:
+    print(f"  检查 {link_total} 个相对链接，全部有效 OK")
+else:
+    print(f"  检查 {link_total} 个相对链接，{link_bad} 个无效")
+
+print()
+print("=" * 62)
 if failures:
     print(f"结果：发现 {len(failures)} 个问题，退出码 1")
     for f in failures:
