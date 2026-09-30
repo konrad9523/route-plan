@@ -70,6 +70,13 @@ references/
 第三方代码/
 probe_*.py
 
+# ===== 外部审查/建议类文档：只留本机参考，不进仓库 =====
+# 这些是外部对项目规则的审查报告与讨论建议，不是项目自身的交付物，
+# 也不代表已经生效的规则（现行规则以 docs/operations/ 下正式文件为准）。
+docs/operations/*复核*.md
+docs/operations/*审查*.md
+docs/operations/*建议_*.md
+
 # ===== 教学脚本的产出目录（生成物，不进版本库）=====
 # docs/learning/osmnx_demo/route_demo.py 运行后会重新生成 output/ 下的三个文件：
 #   graph.graphml      与 data/campus_552.graphml 内容相同（同一份路网的副本）

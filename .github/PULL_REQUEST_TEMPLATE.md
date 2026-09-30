@@ -24,68 +24,40 @@
 
 - [ ] 已检查 `git diff` 和 `git diff --cached`，没有混入无关改动
 - [ ] 没有提交密钥、个人信息、未经许可的数据或大体积临时文件
-- [ ] **本分支没有包含 `member_workspaces/`**（最终差异与**历史**都查过，见下方折叠说明）
-- [ ] 没有把 `个人工作区/` 中的个人草稿作为公共交付物；共享学习资料已整理到 `docs/learning/`
+- [ ] **没有把本机草稿当成成果提交**（`个人工作区/` 不该出现在分支里）
 - [ ] 每个提交服务于**一个可解释、可验证、可回退的逻辑目标**（无关改动已拆开；
       "修复 + 守护它的测试"属于同一目标，**不应拆**）
 - [ ] 修复 bug 的改动带上了**在修复前会失败的测试**
-- [ ] 若改变数据契约、字段、单位或方向约定，**相关接口消费者已参与确认**
-      （只是"通知过"不算确认，需说明迁移方式）
-- [ ] 若本次由 A3 或某位成员提交，**已请另一位非作者复核这一部分**
-      （含 Reviewer 自己写的代码）
-- [ ] 已请求至少一位非作者组员审查
+- [ ] 若改变数据契约、字段、单位或方向约定，**用到它的那个人已确认**
+      （只是"在群里说过"不算确认）
+- [ ] 若审查人自己也写了代码，那部分由**另一个人**看过
+- [ ] 已请至少一位非作者审查
 
 <details>
-<summary><b>发 PR 前必须检查整个分支</b>（点开看命令与原因）</summary>
+<summary><b>发 PR 前怎么检查分支</b>（点开看命令）</summary>
 
 `git diff --cached` 只比较"暂存区 vs HEAD"，**它回答不了"这个 PR 要合入什么"**。
-内容一旦提交、暂存区为空，它可能毫无输出——即使分支上带着草稿提交。
+内容一旦提交、暂存区为空，它可能毫无输出。
 
-**正确做法：比较分支与上游基线（注意三点号）**
+**正确做法：比较分支与基线（注意是三个点）**
 
 ```powershell
-git fetch upstream
-git diff --name-status upstream/main...HEAD   # 这次要合入哪些文件
-git log --oneline upstream/main..HEAD         # 分支带了哪些提交
-git diff --check upstream/main...HEAD         # 尾随空格等低级问题
-git diff upstream/main...HEAD                 # 逐行内容
-```
+git fetch upstream                             # 仓库所有者用 origin
+git diff --name-status upstream/main...HEAD    # 这次要合入哪些文件
+git log --oneline upstream/main..HEAD          # 分支带了哪些提交
+git diff --check upstream/main...HEAD          # 尾随空格等低级问题
 
-**为什么必须这样查**（真实反例）：
-第一次提交误加了 `member_workspaces/A3/`，第二次提交是正常代码。
-两次提交之后查暂存区——**清单是空的**，但草稿仍在分支差异里，会一起进 PR。
+# 再查历史：能发现"加进来又删掉"的文件（净差异看不见这种）
+git log --full-history -m --oneline --name-status upstream/main..HEAD `
+    -- 个人工作区/
+#    应无输出
+```
 
 > `.gitignore` **不能**把已提交的文件从 PR 中排除——它只影响未跟踪文件。
+> 本机草稿区 `个人工作区/` 已被忽略，正常压根不会进 git；
+> 这两步是用来兜底"万一"的。
 
-**如果已经带进来了**：不要用 `git rm --cached` 掩盖（文件仍留在分支历史里）。
-正确做法是从 `upstream/main` 重建一条干净分支，只挑该交付的文件（见管理原则 §2.4.1）。
-
-### 怎么确认没带进 `member_workspaces/`（两步都要做）
-
-**⚠️ 只看"最终差异"会漏。** 实测反例：先提交一次草稿、再提交一次删除它，
-**最终净差异为 0**，但历史里保留了"添加"和"删除"两次记录。
-所以必须**同时查净差异与历史**：
-
-```powershell
-# 第 1 步：净差异 —— 回答"这次要合入什么"
-git diff --name-only upstream/main...HEAD | Select-String "member_workspaces|个人工作区"
-#    应无输出
-
-# 第 2 步：历史 —— 回答"分支有没有【带过】这些目录"
-git log --full-history -m --oneline --name-status upstream/main..HEAD `
-    -- member_workspaces/ 个人工作区/
-#    应无输出（普通 git log --oneline 只显示提交说明、不显示路径，不够用）
-```
-
-**两步的差别**：
-
-| 命令 | 能发现 |
-|---|---|
-| `git diff --name-only upstream/main...HEAD` | 最终**留在**分支里的草稿文件 |
-| `git log --full-history ... -- <路径>` | 曾经**加进来又被删掉**的草稿（净差异看不见） |
-
-> **若泄露的是密钥**：重建干净分支**不能替代**凭据轮换与泄露处置。
-> 先撤销/轮换凭据、通知仓库负责人，再按管理原则 §8.6 处理。
+**如果发现真的提交进了不该提交的文件**：不要用 `git rm --cached` 掩盖
+（内容仍留在提交历史里）。正确做法是从基线重建一条干净分支，只挑该交付的文件。
 
 </details>
-
