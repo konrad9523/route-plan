@@ -1,0 +1,352 @@
+{
+  "dataset": {
+    "path": "cache/a3_wuhan/processed/graph.pkl",
+    "nodes": 91638,
+    "directed_edges": 206383,
+    "largest_scc_nodes": 90284,
+    "weight_unit": "meter",
+    "bad_weights": 0,
+    "undefined_endpoints": 0
+  },
+  "queries": {
+    "seed": 2026,
+    "count": 50,
+    "ordered_pairs": [
+      [
+        31319,
+        81354
+      ],
+      [
+        13550,
+        65265
+      ],
+      [
+        3064,
+        65083
+      ],
+      [
+        84406,
+        70531
+      ],
+      [
+        79965,
+        1794
+      ],
+      [
+        58390,
+        37946
+      ],
+      [
+        9304,
+        44712
+      ],
+      [
+        90166,
+        52200
+      ],
+      [
+        23456,
+        68938
+      ],
+      [
+        91418,
+        34831
+      ],
+      [
+        3235,
+        62988
+      ],
+      [
+        71180,
+        49281
+      ],
+      [
+        38528,
+        38874
+      ],
+      [
+        46278,
+        6516
+      ],
+      [
+        30441,
+        88294
+      ],
+      [
+        56659,
+        10018
+      ],
+      [
+        47736,
+        46892
+      ],
+      [
+        54802,
+        22515
+      ],
+      [
+        29697,
+        36624
+      ],
+      [
+        50297,
+        70355
+      ],
+      [
+        4059,
+        29236
+      ],
+      [
+        4362,
+        83779
+      ],
+      [
+        44452,
+        14051
+      ],
+      [
+        34650,
+        63760
+      ],
+      [
+        81372,
+        33876
+      ],
+      [
+        53395,
+        54837
+      ],
+      [
+        49948,
+        60301
+      ],
+      [
+        70206,
+        57668
+      ],
+      [
+        29184,
+        91240
+      ],
+      [
+        73626,
+        13772
+      ],
+      [
+        54130,
+        13605
+      ],
+      [
+        28444,
+        62240
+      ],
+      [
+        56801,
+        65674
+      ],
+      [
+        8840,
+        60451
+      ],
+      [
+        23688,
+        45908
+      ],
+      [
+        5098,
+        13046
+      ],
+      [
+        28106,
+        83937
+      ],
+      [
+        84235,
+        66965
+      ],
+      [
+        7650,
+        79062
+      ],
+      [
+        10989,
+        60705
+      ],
+      [
+        79297,
+        52795
+      ],
+      [
+        51267,
+        87222
+      ],
+      [
+        47797,
+        81803
+      ],
+      [
+        33170,
+        72357
+      ],
+      [
+        48354,
+        85945
+      ],
+      [
+        45007,
+        34222
+      ],
+      [
+        69,
+        80237
+      ],
+      [
+        58081,
+        11128
+      ],
+      [
+        26548,
+        17439
+      ],
+      [
+        86442,
+        36079
+      ]
+    ],
+    "source": "unique ordered pairs sampled from largest SCC"
+  },
+  "method": {
+    "rounds": 5,
+    "timing": "interleaved warm ALT-only queries; preprocessing excluded from query timing",
+    "distance_tolerance_m": 0.00001,
+    "landmark_counts": [
+      4,
+      8,
+      16
+    ]
+  },
+  "landmarks": {
+    "4": [
+      80958,
+      41381,
+      90950,
+      23065
+    ],
+    "8": [
+      80958,
+      41381,
+      90950,
+      23065,
+      7710,
+      63630,
+      81237,
+      21829
+    ],
+    "16": [
+      80958,
+      41381,
+      90950,
+      23065,
+      7710,
+      63630,
+      81237,
+      21829,
+      21256,
+      81525,
+      14010,
+      20586,
+      53843,
+      39372,
+      12080,
+      18292
+    ]
+  },
+  "correctness_vs_inbox_dijkstra": {
+    "ALT-4": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    },
+    "ALT-8": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    },
+    "ALT-16": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    }
+  },
+  "benchmark": {
+    "ALT-4": {
+      "landmark_count": 4,
+      "median_ms_per_query": 26.52033999795094,
+      "min_ms_per_query": 22.834572000429034,
+      "max_ms_per_query": 29.831089999061078,
+      "mean_expanded": 6620.38,
+      "mean_pushed": 7920.16,
+      "last_round_expanded_min": 43,
+      "last_round_expanded_median": 3451.5,
+      "last_round_expanded_max": 32210,
+      "last_round_pushed_min": 68,
+      "last_round_pushed_median": 4175,
+      "last_round_pushed_max": 37913,
+      "prepare_ms_once": 647.7664000121877,
+      "amortized_ms_per_query_for_this_batch": 39.475667998194695,
+      "round_ms_per_query": [
+        22.834572000429034,
+        25.278777999337763,
+        29.831089999061078,
+        26.52033999795094,
+        27.546315998770297
+      ]
+    },
+    "ALT-8": {
+      "landmark_count": 8,
+      "median_ms_per_query": 26.979616000317037,
+      "min_ms_per_query": 23.219783999957144,
+      "max_ms_per_query": 27.659471998922527,
+      "mean_expanded": 4812.28,
+      "mean_pushed": 5809.02,
+      "last_round_expanded_min": 43,
+      "last_round_expanded_median": 2681.5,
+      "last_round_expanded_max": 26475,
+      "last_round_pushed_min": 68,
+      "last_round_pushed_median": 3212,
+      "last_round_pushed_max": 30549,
+      "prepare_ms_once": 1276.5270000090823,
+      "amortized_ms_per_query_for_this_batch": 52.51015600049868,
+      "round_ms_per_query": [
+        23.219783999957144,
+        24.32220400078222,
+        26.979616000317037,
+        27.659471998922527,
+        27.10749400081113
+      ]
+    },
+    "ALT-16": {
+      "landmark_count": 16,
+      "median_ms_per_query": 30.33915000036359,
+      "min_ms_per_query": 27.85797599935904,
+      "max_ms_per_query": 31.904249999206513,
+      "mean_expanded": 3590.18,
+      "mean_pushed": 4376.66,
+      "last_round_expanded_min": 43,
+      "last_round_expanded_median": 2004.5,
+      "last_round_expanded_max": 18938,
+      "last_round_pushed_min": 68,
+      "last_round_pushed_median": 2515.5,
+      "last_round_pushed_max": 22140,
+      "prepare_ms_once": 4285.881699994206,
+      "amortized_ms_per_query_for_this_batch": 116.05678400024772,
+      "round_ms_per_query": [
+        27.85797599935904,
+        28.933429999742657,
+        31.904249999206513,
+        31.794942000415176,
+        30.33915000036359
+      ]
+    }
+  }
+}

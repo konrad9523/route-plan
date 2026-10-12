@@ -1,0 +1,24 @@
+{
+  "source": "wuhan_drive.osm",
+  "n_nodes": 91638,
+  "n_edges": 206383,
+  "csr_nnz": 206383,
+  "oneway_edges": 42479,
+  "oneway_ratio": 0.2058,
+  "road_type_counts": {
+    "unclassified": 49965,
+    "service": 47175,
+    "residential": 41083,
+    "tertiary": 25972,
+    "secondary": 16077,
+    "primary": 10807,
+    "trunk": 4927,
+    "motorway": 2496,
+    "trunk_link": 1912,
+    "living_street": 1856,
+    "motorway_link": 1665,
+    "primary_link": 1473,
+    "secondary_link": 714,
+    "tertiary_link": 261
+  }
+}
