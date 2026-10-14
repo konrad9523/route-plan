@@ -1,0 +1,2 @@
+﻿起点,终点,Dijkstra代价,Astar高估启发代价,次优差距,Dijkstra路径,Astar路径,是否检测到反例
+S,G,4.0,101.0,97.0,S->B->G,S->A->G,True
