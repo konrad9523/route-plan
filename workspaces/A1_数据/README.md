@@ -140,6 +140,27 @@ workspaces/A1_数据/
 > 并决定是否把压缩后的数据放进 `data/` 或发布页。
 > 详见 [`data/README.md`](../../data/README.md)。
 
+### 华盛顿与深圳路网成果索引（2026-10）
+
+以下为本次 A1 数据线新增的**两套机动车有向路网**，供其他组员快速定位文件；详细处理过程不在此重复。成果目前实际归档在本工作区内，**不是 `/data/` 下的另一份副本**。这与上文原有的“数据统一存放 `/data/`”约定存在差异，后续如需调整正式数据位置，应由团队统一确认，避免重复保存。
+
+| 数据集 | GraphML（相对本 README） | 节点 | 有向边 |
+|---|---|---:|---:|
+| 华盛顿特区 | [`01_路网清单/processed/dc_driving_optimized.graphml`](01_路网清单/processed/dc_driving_optimized.graphml) | 41,570 | 99,193 |
+| 深圳市 | [`01_路网清单/processed/shenzhen_driving_optimized.graphml`](01_路网清单/processed/shenzhen_driving_optimized.graphml) | 85,287 | 176,241 |
+
+| 所需内容 | 文件位置与用途 |
+|---|---|
+| 华盛顿原始 OSM 数据 | [`01_路网清单/raw/district-of-columbia-261011.osm.pbf`](01_路网清单/raw/district-of-columbia-261011.osm.pbf)：原始数据备查 |
+| 华盛顿质量报告 | [`03_数据质量/dc_validation_optimized.json`](03_数据质量/dc_validation_optimized.json)：拓扑、边权与路径对照验证 |
+| 深圳质量报告 | [`03_数据质量/shenzhen_validation.json`](03_数据质量/shenzhen_validation.json)：拓扑、边权与路径对照验证 |
+| 深圳转换统计 | [`03_数据质量/shenzhen_driving_optimized.summary.json`](03_数据质量/shenzhen_driving_optimized.summary.json)：筛选道路、节点、边及默认速度使用情况 |
+| 华盛顿处理记录 | [`05_文档报告/华盛顿OSM路网数据处理与系统适配说明.md`](05_文档报告/华盛顿OSM路网数据处理与系统适配说明.md)：转换方法、运行与局限性 |
+| 深圳处理记录 | [`05_文档报告/深圳市OSM路网数据处理与质量验证记录.md`](05_文档报告/深圳市OSM路网数据处理与质量验证记录.md)：裁剪、转换及验证过程 |
+| 转换与验证脚本 | [`05_文档报告/scripts/`](05_文档报告/scripts/)：A1 已归档的 OSM 处理脚本；深圳转换沿用同类规则 |
+
+**使用提示：** 两份成果都是 GraphML 格式，可由现有 `load_graphml()` 读取；节点经纬度为 WGS84，边包含长度、速度和道路几何。它们是**路网数据成果**，不是已经在共享主程序中启用的城市切换功能。已有基础检查通过，但 OSM 转向限制与部分条件性通行规则尚未完整建模；深圳大量道路速度采用默认值。
+
 ---
 
 ## 五、其他角色需要从这里看什么
