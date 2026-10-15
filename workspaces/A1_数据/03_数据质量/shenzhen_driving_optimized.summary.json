@@ -1,0 +1,34 @@
+{
+  "input": "data\\raw\\shenzhen.osm.pbf",
+  "output": "data\\processed\\shenzhen_driving_optimized.graphml",
+  "selected_ways": 57822,
+  "node_elements_written": 85287,
+  "routing_nodes_used": 85287,
+  "shape_points_kept_only_in_geometry": 312468,
+  "physical_segments": 117641,
+  "directed_edges": 176241,
+  "segments_skipped_missing_node": 0,
+  "ways_using_default_speed": 55231,
+  "variable_direction_ways_excluded": 1,
+  "road_type_ways": {
+    "secondary": 4661,
+    "motorway": 1543,
+    "motorway_link": 1626,
+    "trunk_link": 1332,
+    "primary_link": 3168,
+    "trunk": 1629,
+    "primary": 5640,
+    "tertiary": 6672,
+    "residential": 8793,
+    "unclassified": 4507,
+    "service": 15933,
+    "secondary_link": 1240,
+    "tertiary_link": 651,
+    "living_street": 427
+  },
+  "warnings": [
+    "OSM relation-based turn restrictions are NOT enforced.",
+    "Access and speed are simplified; conditional and lane-specific restrictions are not modeled.",
+    "Shape-only nodes are omitted from GraphML nodes but retained within edge geometries."
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "input": "C:\\Users\\17742\\Desktop\\route-plan-main\\route-plan-main\\data\\processed\\shenzhen_driving_optimized.graphml",
+  "generated_utc": "2026-10-14T08:51:55.228635+00:00",
+  "load_seconds": 4.81,
+  "node_count": 85287,
+  "edge_count": 176241,
+  "connected": {
+    "isolated_nodes": 0,
+    "weak_component_count": 249,
+    "weak_largest_nodes": 84408,
+    "weak_largest_fraction": 0.9896936227092054,
+    "strong_component_count": 1281,
+    "strong_largest_nodes": 83307,
+    "strong_largest_fraction": 0.9767842695838757
+  },
+  "edge_checks": {
+    "invalid_node_coordinates_count": 0,
+    "non_positive_or_nonfinite_length_count": 0,
+    "non_positive_or_nonfinite_speed_count": 0,
+    "shorter_than_straight_count_with_tolerance": 0,
+    "speed_kmh_max": 120.0,
+    "speed_kmh_median": 30.0,
+    "road_types_directed_edges": {
+      "service": 53687,
+      "residential": 35476,
+      "tertiary": 25540,
+      "unclassified": 16612,
+      "secondary": 14933,
+      "primary": 14811,
+      "primary_link": 3502,
+      "trunk": 2895,
+      "motorway": 1848,
+      "motorway_link": 1848,
+      "living_street": 1579,
+      "trunk_link": 1454,
+      "secondary_link": 1315,
+      "tertiary_link": 741
+    },
+    "example_short_edges": []
+  },
+  "route_tests": [
+    {
+      "source": 2718683726,
+      "target": 1119008446,
+      "preference": "shortest",
+      "dijkstra": {
+        "status": "ok",
+        "cost": 108276.30499999992,
+        "distance_m": 108276.30499999992,
+        "duration_s": 6176.023416680793,
+        "expanded_states": 173716,
+        "queue_pushes": 173739,
+        "planning_ms": 1026.5095999930054,
+        "path_node_count": 399,
+        "path_edge_count": 398
+      },
+      "astar": {
+        "status": "ok",
+        "cost": 108276.30499999992,
+        "distance_m": 108276.30499999992,
+        "duration_s": 6176.023416680793,
+        "expanded_states": 165156,
+        "queue_pushes": 165551,
+        "planning_ms": 1618.8427000015508,
+        "path_node_count": 399,
+        "path_edge_count": 398
+      },
+      "costs_agree": true
+    },
+    {
+      "source": 2718683726,
+      "target": 1119008446,
+      "preference": "fastest",
+      "dijkstra": {
+        "status": "ok",
+        "cost": 5485.468941790839,
+        "distance_m": 111008.81399999991,
+        "duration_s": 5485.468941790839,
+        "expanded_states": 173717,
+        "queue_pushes": 173748,
+        "planning_ms": 1557.717399991816,
+        "path_node_count": 351,
+        "path_edge_count": 350
+      },
+      "astar": {
+        "status": "ok",
+        "cost": 5485.468941790839,
+        "distance_m": 111008.81399999991,
+        "duration_s": 5485.468941790839,
+        "expanded_states": 173470,
+        "queue_pushes": 173519,
+        "planning_ms": 1716.8821999803185,
+        "path_node_count": 351,
+        "path_edge_count": 350
+      },
+      "costs_agree": true
+    },
+    {
+      "source": 1119008446,
+      "target": 2718683726,
+      "preference": "shortest",
+      "dijkstra": {
+        "status": "ok",
+        "cost": 108664.51100000003,
+        "distance_m": 108664.51100000003,
+        "duration_s": 6439.2486156240675,
+        "expanded_states": 174158,
+        "queue_pushes": 174166,
+        "planning_ms": 1185.73369999649,
+        "path_node_count": 448,
+        "path_edge_count": 447
+      },
+      "astar": {
+        "status": "ok",
+        "cost": 108664.51100000003,
+        "distance_m": 108664.51100000003,
+        "duration_s": 6439.2486156240675,
+        "expanded_states": 137836,
+        "queue_pushes": 139583,
+        "planning_ms": 1359.8869999987073,
+        "path_node_count": 448,
+        "path_edge_count": 447
+      },
+      "costs_agree": true
+    },
+    {
+      "source": 1119008446,
+      "target": 2718683726,
+      "preference": "fastest",
+      "dijkstra": {
+        "status": "ok",
+        "cost": 5618.116501862615,
+        "distance_m": 114795.09000000007,
+        "duration_s": 5618.116501862615,
+        "expanded_states": 174148,
+        "queue_pushes": 174166,
+        "planning_ms": 1351.333099999465,
+        "path_node_count": 380,
+        "path_edge_count": 379
+      },
+      "astar": {
+        "status": "ok",
+        "cost": 5618.116501862615,
+        "distance_m": 114795.09000000007,
+        "duration_s": 5618.116501862615,
+        "expanded_states": 173106,
+        "queue_pushes": 173375,
+        "planning_ms": 1760.9049000020605,
+        "path_node_count": 380,
+        "path_edge_count": 379
+      },
+      "costs_agree": true
+    }
+  ],
+  "limitations": [
+    "Turn restrictions from OSM relations are not yet loaded.",
+    "Conditional access and detailed traffic rules are simplified.",
+    "All paths are on the converted graph, not a traffic-legal proof."
+  ]
+}
