@@ -51,17 +51,39 @@ def run_t2(dijkstra, astar, graph, positions, scale, scale_ms, haversine,
     fig.savefig(output_dir / "T2_查询耗时.png", dpi=160)
     plt.close(fig)
 
-    query_total_d, query_total_a = sum(d_ms), sum(a_ms)
-    fig, ax = plt.subplots(figsize=(6.5, 4.5))
-    ax.bar(["Dijkstra", "A*"], [query_total_d, query_total_a],
-           color=["#4c78a8", "#f58518"])
-    ax.bar(["Dijkstra", "A*"], [0, scale_ms],
-           bottom=[query_total_d, query_total_a], color="#e45756",
-           label="启发系数一次性计算")
-    ax.set_ylabel(f"{len(rows)} 次查询总耗时（毫秒）")
-    ax.set_title("T2：含一次性预处理的总成本")
-    ax.legend()
+    query_total_d = sum(d_ms)
+    query_total_a = sum(a_ms)
+    total_a = query_total_a + scale_ms
+
+    fig, ax = plt.subplots(figsize=(7.5, 5))
+    x_d, x_a = 0, 1
+
+    ax.bar(x_d, query_total_d, color="#4c78a8",
+           label="Dijkstra 查询耗时")
+    ax.bar(x_a, query_total_a, color="#f58518",
+           label="A* 查询耗时（含 Haversine 计算）")
+    ax.bar(x_a, scale_ms, bottom=query_total_a, color="#e45756",
+           label="启发系数估算（一次，非每对查询）")
+
+    totals = [query_total_d, total_a]
+    for x, total in zip([x_d, x_a], totals):
+        ax.annotate(f"{total:.1f} ms", xy=(x, total),
+                    xytext=(0, 5), textcoords="offset points",
+                    ha="center", va="bottom")
+
+    per_query = scale_ms / len(rows) if rows else 0.0
+    ax.annotate(f"预处理摊到每对约 {per_query:.2f} ms",
+                xy=(x_a, total_a), xytext=(0, -18),
+                textcoords="offset points", ha="center", va="top",
+                fontsize=8, color="#666")
+
+    ax.set_xticks([x_d, x_a], ["Dijkstra", "A*"])
+    ax.set_ylabel("100 对查询耗时 + 一次性预处理（毫秒）")
+    ax.set_title("T2：查询耗时统计（A* 计入一次启发系数估算）")
+    ax.set_ylim(0, max(totals) * 1.18 if max(totals) > 0 else 1)
+    ax.set_axisbelow(True)
     ax.grid(axis="y", alpha=.2)
+    ax.legend()
     fig.tight_layout()
     fig.savefig(output_dir / "T2_总成本.png", dpi=160)
     plt.close(fig)
