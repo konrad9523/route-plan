@@ -144,3 +144,20 @@ python -m pytest -q
 ## 五、结果说明
 
 本次深圳路网沿用华盛顿方案，实现了从广东省 OSM PBF、深圳行政边界裁剪，到机动车道路筛选、优化 GraphML 构建和基础质量验证的完整流程。最终获得 **85,287 个路由节点、176,241 条有向边**，质量验证程序返回 `BASIC CHECKS PASSED`，项目回归测试经修复后全部 56 项通过。数据已具备进入进一步路径规划实验的基础，但不应被表述为已经达到商业导航级别的交通规则完整性。
+
+## A1-3 修复后归档说明
+
+本节记录本次可复现性修复后的文件存放位置。文中旧的 data/raw、tools 和 data/processed 路径属于历史项目目录，不应直接理解为当前 A1 工作区的相对路径。
+
+当前仓库内已归档：
+
+- 转换脚本：`workspaces/A1_数据/05_文档报告/scripts/convert_shenzhen_osm.py`
+- 裁剪边界：`workspaces/A1_数据/01_路网清单/raw/shenzhen_boundary.geojson`
+- 原始检查结果：`workspaces/A1_数据/03_数据质量/shenzhen_osm_inspection.json`
+- 路网成果：`workspaces/A1_数据/01_路网清单/processed/shenzhen_driving_optimized.graphml`
+
+原始处理文件目前保存在本机 `D:\DDDesk\G4\route-plan-main (2)\data\raw`，包括广东原始 PBF 和深圳裁剪 PBF。深圳裁剪 PBF 已归档至本仓库：`workspaces/A1_数据/01_路网清单/raw/shenzhen.osm.pbf`。可直接使用该文件和转换脚本复现深圳路网；广东原始 PBF 尚未纳入 Git，因此从广东原始数据重新裁剪的完整上游流程仍需外部数据。
+
+A1-3 验证已使用恢复的 `shenzhen.osm.pbf` 和原始转换脚本重新生成路网。复现统计为：85,287 个节点、176,241 条有向边、57,822 条选中 Way、117,641 个物理路段，与历史记录一致。该验证属于转换成功及统计复现，不等同于 GraphML 逐字节一致性验证。
+
+复现时运行转换脚本，输入深圳裁剪 PBF，输出至独立临时文件，不覆盖正式路网。

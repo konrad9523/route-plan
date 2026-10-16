@@ -1,0 +1,102 @@
+﻿{
+    "issue":  "A1-6",
+    "description":  "GraphML toll loading and routing",
+    "graphml":  "C:\\a1_osm_test\\dc_a1_5_fixed.graphml",
+    "nodes":  41679,
+    "edges":  99543,
+    "toll_true_edges":  25,
+    "toll_false_edges":  99518,
+    "checks":  {
+                   "T1_loader_patch":  true,
+                   "T2_toll_parsing":  true,
+                   "T3_graphml_to_edge_toll":  true,
+                   "T4_dijkstra_and_astar_toll_routing":  true,
+                   "T5_real_graph_node_count":  true,
+                   "T6_real_graph_edge_count":  true,
+                   "T7_all_real_toll_attributes_match":  true,
+                   "T8_project_pytest":  true
+               },
+    "details":  {
+                    "T2_toll_parsing":  {
+
+                                        },
+                    "T3_graphml_to_edge_toll":  {
+                                                    "actual":  [
+                                                                   true,
+                                                                   true,
+                                                                   false,
+                                                                   false,
+                                                                   true,
+                                                                   true,
+                                                                   true,
+                                                                   false,
+                                                                   false,
+                                                                   false,
+                                                                   false
+                                                               ],
+                                                    "expected":  [
+                                                                     true,
+                                                                     true,
+                                                                     false,
+                                                                     false,
+                                                                     true,
+                                                                     true,
+                                                                     true,
+                                                                     false,
+                                                                     false,
+                                                                     false,
+                                                                     false
+                                                                 ]
+                                                },
+                    "T4_dijkstra_and_astar_toll_routing":  {
+                                                               "dijkstra":  {
+                                                                                "fastest_nodes":  [
+                                                                                                      1,
+                                                                                                      2,
+                                                                                                      4
+                                                                                                  ],
+                                                                                "avoid_nodes":  [
+                                                                                                    1,
+                                                                                                    3,
+                                                                                                    4
+                                                                                                ],
+                                                                                "fastest_uses_toll":  true,
+                                                                                "avoid_uses_toll":  false,
+                                                                                "pass":  true
+                                                                            },
+                                                               "astar":  {
+                                                                             "fastest_nodes":  [
+                                                                                                   1,
+                                                                                                   2,
+                                                                                                   4
+                                                                                               ],
+                                                                             "avoid_nodes":  [
+                                                                                                 1,
+                                                                                                 3,
+                                                                                                 4
+                                                                                             ],
+                                                                             "fastest_uses_toll":  true,
+                                                                             "avoid_uses_toll":  false,
+                                                                             "pass":  true
+                                                                         }
+                                                           },
+                    "T5_real_graph_node_count":  {
+                                                     "actual":  41679
+                                                 },
+                    "T6_real_graph_edge_count":  {
+                                                     "actual":  99543
+                                                 },
+                    "T7_all_real_toll_attributes_match":  {
+                                                              "toll_true_edges":  25,
+                                                              "toll_false_edges":  99518,
+                                                              "mismatches":  [
+
+                                                                             ]
+                                                          },
+                    "T8_project_pytest":  {
+                                              "exit_code":  0,
+                                              "log_path":  "C:\\a1_osm_test\\a1_6_pytest_output.txt"
+                                          }
+                },
+    "verdict":  "PASS"
+}

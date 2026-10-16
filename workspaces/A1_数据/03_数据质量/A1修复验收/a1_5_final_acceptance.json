@@ -1,0 +1,106 @@
+{
+  "test_name": "A1-5 Final Integrated Acceptance",
+  "pbf": "C:\\a1_osm_test\\dc.osm.pbf",
+  "baseline": "C:\\a1_osm_test\\dc_a1_2_fixed.graphml",
+  "new_graph": "C:\\a1_osm_test\\dc_a1_5_fixed.graphml",
+  "nodes": 41679,
+  "directed_edges": 99543,
+  "selected_osm_ways": 30711,
+  "speed_source_edges": {
+    "default": 79598,
+    "osm_maxspeed": 19945
+  },
+  "checks": {
+    "T1_node_count": true,
+    "T1_edge_count": true,
+    "T1_nodes_unchanged": true,
+    "T1_original_edges_and_attributes_unchanged": true,
+    "T1_new_field_definitions": true,
+    "T2_selected_way_count": true,
+    "T3_all_edge_source_fields_match_PBF": true,
+    "T3_speed_source_counts": true,
+    "T3_all_graph_ways_exist_in_PBF": true,
+    "T4_A1_1_closed_way_restored": true,
+    "T4_A1_2_permission_way_restored": true,
+    "T4_A1_2_permission_unit_cases": true,
+    "T5_all_edge_endpoints_valid": true,
+    "T5_no_isolated_nodes": true,
+    "T5_scc_analysis_completed": true,
+    "T6_40_OD_pairs_2_modes": true
+  },
+  "details": {
+    "T1_node_count": {
+      "actual": 41679,
+      "expected": 41679
+    },
+    "T1_edge_count": {
+      "actual": 99543,
+      "expected": 99543
+    },
+    "T1_original_edges_and_attributes_unchanged": {
+      "removed_or_changed": 0,
+      "added_or_changed": 0
+    },
+    "T2_selected_way_count": {
+      "actual": 30711,
+      "expected": 30711
+    },
+    "T3_all_edge_source_fields_match_PBF": {},
+    "T3_speed_source_counts": {
+      "default": 79598,
+      "osm_maxspeed": 19945
+    },
+    "T3_all_graph_ways_exist_in_PBF": {
+      "graph_way_count": 30711,
+      "unknown_count": 0
+    },
+    "T4_A1_1_closed_way_restored": {
+      "edges": [
+        {
+          "source": "49739134",
+          "target": "49739133",
+          "length": "10.673"
+        },
+        {
+          "source": "49739133",
+          "target": "49739134",
+          "length": "107.301"
+        }
+      ]
+    },
+    "T4_A1_2_permission_way_restored": {
+      "edges": [
+        {
+          "source": "49748393",
+          "target": "49748395",
+          "length": "46.643"
+        },
+        {
+          "source": "49748395",
+          "target": "49748393",
+          "length": "46.643"
+        }
+      ]
+    },
+    "T5_all_edge_endpoints_valid": {
+      "invalid_endpoints": 0
+    },
+    "T5_no_isolated_nodes": {
+      "isolated_nodes": 0
+    },
+    "T5_connectivity": {
+      "strongly_connected_components": 891,
+      "largest_scc_nodes": 39626,
+      "largest_scc_ratio": 0.950743
+    },
+    "T6_40_OD_pairs_2_modes": {
+      "comparisons": 80,
+      "failures": 0,
+      "examples": []
+    }
+  },
+  "failure_examples": {},
+  "route_test_failures": [],
+  "verdict": "PASS",
+  "scope_note": "PBF source and GraphML attribute checks cover all output edges. Path comparisons use 40 sampled OD pairs and two cost modes with independent Python Dijkstra/A* implementations, not the project's routing API."
+}

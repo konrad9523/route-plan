@@ -64,6 +64,16 @@ def _first_road_type(raw: str | None) -> str:
     return text.strip().strip("'\"").strip()
 
 
+
+def _parse_toll(raw: str | None) -> bool:
+    """? GraphML ??????????????
+
+    yes/true/1 ?????no/false/0???????
+    ?????????????????????????
+    """
+    return str(raw or "").strip().lower() in {"yes", "true", "1"}
+
+
 def load_graphml(path: str | Path) -> Graph:
     """读 GraphML，返回 path_planning 的 Graph。"""
 
@@ -113,6 +123,7 @@ def load_graphml(path: str | Path) -> Graph:
                 speed_kmh=speed_kmh,
                 road_type=road_type,
                 geometry=geometry,
+                toll=_parse_toll(values.get("toll")),
                 name=(values.get("name") or "")[:60],
             )
         )

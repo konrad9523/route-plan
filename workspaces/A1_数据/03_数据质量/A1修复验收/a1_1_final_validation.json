@@ -1,0 +1,170 @@
+{
+  "generated_utc": "2026-10-16T08:53:44.046790+00:00",
+  "input": {
+    "old": "C:\\Users\\17742\\Desktop\\route-plan-github\\workspaces\\A1_数据\\01_路网清单\\processed\\dc_driving_optimized.graphml",
+    "new": "C:\\a1_osm_test\\dc_a1_1_fixed.graphml",
+    "output": "C:\\a1_osm_test\\a1_1_final_validation.json",
+    "pairs": 40
+  },
+  "counts": {
+    "old_nodes": 41570,
+    "new_nodes": 41666,
+    "old_edges": 99193,
+    "new_edges": 99497,
+    "preserved_old_edges": 99193,
+    "removed_or_changed_old_edges": 0,
+    "added_or_changed_new_edges": 304,
+    "old_nodes_removed": 0,
+    "old_nodes_coordinates_changed": 0
+  },
+  "old_graph": {
+    "issues": {},
+    "examples": {},
+    "weak": {
+      "count": 347,
+      "largest": 39978
+    },
+    "strong": {
+      "count": 893,
+      "largest": 39507
+    },
+    "isolated": 0
+  },
+  "new_graph": {
+    "issues": {},
+    "examples": {},
+    "weak": {
+      "count": 349,
+      "largest": 40066
+    },
+    "strong": {
+      "count": 895,
+      "largest": 39595
+    },
+    "isolated": 0
+  },
+  "verified_closed_ways": {
+    "osm_way_ids": [
+      505946239,
+      564451751
+    ],
+    "expected_nodes": {
+      "4957640102": 47.208,
+      "5438403228": 71.892
+    },
+    "actual_self_loop_counts": {
+      "4957640102": 2,
+      "5438403228": 2
+    },
+    "pass": true
+  },
+  "target_way_6053502": {
+    "pass": true,
+    "edge_10_673_count": 1,
+    "edge_107_301_count": 1,
+    "combined_length_m": 117.974
+  },
+  "routing": {
+    "od_pairs": 40,
+    "modes": [
+      "length",
+      "time"
+    ],
+    "algorithm_comparisons": 80,
+    "failures": [],
+    "examples": [
+      {
+        "mode": "length",
+        "pair": [
+          "49252020",
+          "3656197339"
+        ],
+        "old_cost": 20550.39799999999,
+        "new_cost": 20550.39799999999,
+        "astar_cost": 20550.39799999999
+      },
+      {
+        "mode": "length",
+        "pair": [
+          "3656197339",
+          "49252020"
+        ],
+        "old_cost": 20477.815000000024,
+        "new_cost": 20477.815000000024,
+        "astar_cost": 20477.815000000024
+      },
+      {
+        "mode": "length",
+        "pair": [
+          "5440263761",
+          "2025100344"
+        ],
+        "old_cost": 623.5880000000002,
+        "new_cost": 623.5880000000002,
+        "astar_cost": 623.5880000000002
+      },
+      {
+        "mode": "length",
+        "pair": [
+          "2025100344",
+          "5440263761"
+        ],
+        "old_cost": 623.588,
+        "new_cost": 623.588,
+        "astar_cost": 623.588
+      },
+      {
+        "mode": "length",
+        "pair": [
+          "4377735682",
+          "7153179615"
+        ],
+        "old_cost": 671.8309999999999,
+        "new_cost": 671.8309999999999,
+        "astar_cost": 671.8309999999999
+      },
+      {
+        "mode": "length",
+        "pair": [
+          "7153179615",
+          "4377735682"
+        ],
+        "old_cost": 671.831,
+        "new_cost": 671.831,
+        "astar_cost": 671.831
+      },
+      {
+        "mode": "length",
+        "pair": [
+          "49739134",
+          "49739135"
+        ],
+        "old_cost": 24.165,
+        "new_cost": 24.165,
+        "astar_cost": 24.165
+      },
+      {
+        "mode": "length",
+        "pair": [
+          "49739135",
+          "49739134"
+        ],
+        "old_cost": 24.165,
+        "new_cost": 24.165,
+        "astar_cost": 24.165
+      }
+    ]
+  },
+  "checks": {
+    "old_graph_parse": true,
+    "new_graph_parse": true,
+    "no_old_edges_removed_or_changed": true,
+    "no_old_nodes_removed_or_changed": true,
+    "new_graph_no_invalid_edges": true,
+    "two_verified_closed_ways_bidirectional_and_geometrically_valid": true,
+    "new_graph_no_isolated_nodes": true,
+    "target_way_6053502_two_edges_17_geometry_segments": true,
+    "route_optimality_and_monotonicity": true
+  },
+  "result": "PASS"
+}
