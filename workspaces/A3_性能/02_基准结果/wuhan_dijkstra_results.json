@@ -1,0 +1,69 @@
+{
+  "dataset": {
+    "file": "cache/a3_wuhan/processed/graph.pkl",
+    "source": "OpenStreetMap / Overpass API; wuhan_drive.osm processed snapshot",
+    "nodes": 91638,
+    "directed_edges": 206383,
+    "largest_scc_nodes": 90284,
+    "negative_or_nonfinite_edges": 0,
+    "weight": "length in meters"
+  },
+  "queries": {
+    "seed": 2026,
+    "count": 50,
+    "sampling": "unique ordered pairs drawn from largest SCC; source != target",
+    "targets_checked_for_plane_consistency": 50
+  },
+  "plane_consistency": {
+    "goals_checked": 50,
+    "edges_checked": 10319150,
+    "violations_below_minus_tolerance": 1627,
+    "minimum_reduced_edge_m": -0.029459993456839584
+  },
+  "reweighted_plane_branch": {
+    "tested": false,
+    "skip_reason": "Plane potential produced negative reduced edges on the tested goals; label-setting Dijkstra is not benchmarked with this infeasible potential."
+  },
+  "correctness": {
+    "reference": "inbox dijkstra.py",
+    "distance_tolerance_m": 0.00001,
+    "distance_mismatches": {
+      "work_plain": 0
+    },
+    "max_absolute_distance_error_m": {
+      "work_plain": 0
+    },
+    "invalid_work_edge_paths": {
+      "work_plain": 0
+    }
+  },
+  "benchmark": {
+    "rounds": 5,
+    "timing_scope": "warm query only; loading, CSR conversion, SCC and one-time _Prepared excluded",
+    "work_preparation_ms": 149.17450002394617,
+    "algorithms": {
+      "inbox": {
+        "round_ms_per_query": [
+          74.58689599996433,
+          72.72483200067654,
+          73.69754399987869,
+          79.88692400045693,
+          76.92400599946268
+        ],
+        "median_ms_per_query": 74.58689599996433,
+        "mean_expanded": 44819.42
+      },
+      "work_plain": {
+        "round_ms_per_query": [
+          73.89841199968942,
+          70.19589199917391,
+          76.01715400000103,
+          81.12634800025262,
+          72.30974599951878
+        ],
+        "median_ms_per_query": 73.89841199968942,
+        "mean_expanded": 44819.42
+      }
+    }
+  }
+}

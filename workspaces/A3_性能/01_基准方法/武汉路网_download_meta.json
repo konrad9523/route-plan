@@ -1,0 +1,10 @@
+{
+  "city": "wuhan",
+  "city_zh": "武汉市",
+  "source": "Overpass API",
+  "query": "[out:xml][timeout:900];\narea[\"name:zh\"=\"武汉市\"][\"boundary\"=\"administrative\"][\"admin_level\"=\"5\"]->.a;\n(\n  way[\"highway\"~\"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|living_street|service)$\"](area.a);\n);\n(._;>;);\nout body;\n",
+  "bytes": 56745565,
+  "sha256": "FC2DD2990DE7C8FA8B4A50D25AE8A8D80A9729BB5AB77D062657F4C471E288A2",
+  "download_seconds": 62,
+  "file": "cache/a3_wuhan/wuhan_drive.osm"
+}
