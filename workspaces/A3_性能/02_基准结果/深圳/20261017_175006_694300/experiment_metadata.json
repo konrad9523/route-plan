@@ -1,0 +1,139 @@
+{
+  "run_id": "20261017_175006_694300",
+  "dataset": {
+    "repository": "yzengal/RoadNetwork-China-City",
+    "distance_archive_url": "https://github.com/yzengal/RoadNetwork-China-City/blob/main/Shenzhen.road-d.tar.gz",
+    "coordinate_archive_url": "https://github.com/yzengal/RoadNetwork-China-City/blob/main/Shenzhen.co.tar.gz",
+    "graph_policy": "shenzhen-github-osm-car-distance-2021",
+    "graph_sha256": "b7937e8a7ae83aa178576c30cd67d9d1fec76ed0ab7e91765daba07134be839a",
+    "road_archive_sha256": "8c964f631c9f110c3e2b029fe3de4c6579dbb0c5df41b5ff8c6aa7867824e4d4",
+    "coordinate_archive_sha256": "1d9b1427e637b332dda7824c7064764a852b0f963e96ca3fc42833ea70000e66",
+    "road_file_sha256": "3cc5fe668f7d617934eb0c8e8c4b00d67ad592cdef5238b4c19910b6f48c6c70",
+    "coordinate_file_sha256": "69bde3d3224aed57ef15f4e525572a38cbe6c012a788b3ec1ee36425cd9df39d",
+    "nodes": 236647,
+    "directed_edges": 517110,
+    "zero_weight_edges": 4,
+    "scc_count": 1,
+    "largest_scc_nodes": 236647,
+    "graph_parse_ms": 832.7134
+  },
+  "queries": {
+    "file": "stratified_queries_100.json",
+    "sha256": "e810f563a1deec722229c1a6f342fe33d87f1e956eca6d3eef8f0762c7f7b79b",
+    "count": 100,
+    "seed": 20261016,
+    "strata": {
+      "5-20km": 20,
+      "20-50km": 20,
+      "1-5km": 20,
+      ">=50km": 20,
+      "0-1km": 20
+    },
+    "same_scc_count": 100
+  },
+  "experiment": {
+    "rounds": 5,
+    "warmup_queries": 5,
+    "random_seed": 20261016,
+    "dijkstra_layers": [
+      "L0",
+      "L1",
+      "L2",
+      "L3",
+      "L4",
+      "B1"
+    ],
+    "astar_cases": [
+      "L0",
+      "L0-CachedScale",
+      "L1",
+      "L2",
+      "L3",
+      "L4",
+      "L5",
+      "L4-PLANE",
+      "L4-ALT4",
+      "L4-ALT8",
+      "L4-ALT16",
+      "L4-MAX4",
+      "L4-MAX8",
+      "L4-MAX16",
+      "B1-H0"
+    ],
+    "aggregation": {
+      "Dijkstra": "median of five timings per query, then median and Q1-Q3 across 100 query medians",
+      "A*": "median and Q1-Q3 across 500 raw timings per configuration and language, matching Astar_pro.ipynb",
+      "A*_paired_ratios": "paired raw timing ratios for the same query and round (500 pairs); slower-query counts compare per-query five-round medians"
+    },
+    "timing": "perf_counter_ns outer; C++ kernel uses library steady_clock; precomputation excluded from per-query latency",
+    "dijkstra_correctness_runs": {
+      "Python": 600,
+      "C++": 600
+    },
+    "astar_correctness_runs": 3000,
+    "correctness_passed": true,
+    "astar_landmark_ids": [
+      123663,
+      36677,
+      12898,
+      128162,
+      174112,
+      96165,
+      161334,
+      215007,
+      212738,
+      161025,
+      164866,
+      102696,
+      30182,
+      1800,
+      81741,
+      144929
+    ],
+    "h0_scale_python": 0.7244885986780722,
+    "h0_scale_cpp": 0.7244885992079034,
+    "plane_scale_python": 0.7246235369181312,
+    "plane_scale_cpp": 0.7246235369191979
+  },
+  "preprocessing_ns": {
+    "python_astar": {
+      "graph_validation": 169654900,
+      "h0_scale": 787141200,
+      "plane": 317912400,
+      "reverse_graph": 175261800,
+      "landmark_selection": 1480809700,
+      "alt_tables": 6796106100
+    },
+    "cpp_astar": {
+      "geometry_outer_ns": 16364900,
+      "geometry_kernel_ns": 16353500,
+      "reverse_outer_ns": 25499700,
+      "reverse_kernel_ns": 25486500,
+      "alt_outer_ns": 605963800,
+      "alt_kernel_ns": 605918600
+    },
+    "dijkstra_python_precheck": 302028800,
+    "dijkstra_python_reverse_graph": 192462100,
+    "dijkstra_cpp_graph_create": 51335600,
+    "astar_cpp_graph_create": 18126300
+  },
+  "environment": {
+    "python": "3.10.20",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "pandas": "2.3.3",
+    "matplotlib": "3.10.9"
+  },
+  "algorithm_files": {
+    "dijkstra_baseline_sha256": "c8e711fdaac6c9e06053ac77800c023a184834e6579a1be9a04b6977def081cd",
+    "dijkstra_variants_sha256": "ff26a69baeafef79b35fa1f7da61d87c204cae17ffac25dce441edf7740f517b",
+    "dijkstra_cpp_source_sha256": "560dd36d3b9238ecf352cd6bdd155b159241f92dd6e2e249e0066ee29c26bd49",
+    "dijkstra_cpp_dll_sha256": "c343292fca49e1fcd8b621d7123219f592ef212eca333f60413b3c48719b2459",
+    "astar_baseline_sha256": "83ad98d5f334ded67fbbad56131e23991d0be3bf15a2deca9186881c40da8164",
+    "astar_variants_sha256": "6d81618eca7662705fe4527fd5ab1d65df5cf4e07db1c35c070bb554428c0495",
+    "astar_cpp_source_sha256": "5f7c6519a01bc92ca64578a80e94e1a66e95f2663f00ecfabce247bb96500ffc",
+    "astar_cpp_dll_sha256": "e1eabda056b56616c12d75ed1c77265516d0349552fa40e52b3105e5f68dd80f"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "run_tag": "20261017_162040_819200",
+  "graph_policy": "wuhan-static-public-way-distance-v2.1",
+  "graph_sha256": "fe7492eaadb4c0d058f8d00c78aa79ee9d6597ac23d4b3280b9c0d09faaf73fa",
+  "query_sha256": "aa5c728689ec18f6ef0c20e8e11fdbc8fb17063cb871abd551021bb86ba6950c",
+  "source_sha256": {
+    "python_baseline": "83ad98d5f334ded67fbbad56131e23991d0be3bf15a2deca9186881c40da8164",
+    "python_variants": "6d81618eca7662705fe4527fd5ab1d65df5cf4e07db1c35c070bb554428c0495",
+    "cpp": "5f7c6519a01bc92ca64578a80e94e1a66e95f2663f00ecfabce247bb96500ffc"
+  },
+  "cpp_dll_sha256": "e1eabda056b56616c12d75ed1c77265516d0349552fa40e52b3105e5f68dd80f",
+  "environment": {
+    "python": "3.11.17",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "numpy": "2.4.6"
+  },
+  "nodes": 91638,
+  "directed_edges": 207165,
+  "queries": 100,
+  "rounds": 5,
+  "warmup_queries_per_configuration_and_language": 5,
+  "random_seed": 20261016,
+  "case_order": [
+    "L0",
+    "L0-CachedScale",
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5",
+    "L4-PLANE",
+    "L4-ALT4",
+    "L4-ALT8",
+    "L4-ALT16",
+    "L4-MAX4",
+    "L4-MAX8",
+    "L4-MAX16",
+    "B1-H0"
+  ],
+  "landmark_ids": [
+    80958,
+    41381,
+    61502,
+    90950,
+    16746,
+    21829,
+    21256,
+    16433,
+    81239,
+    18698,
+    13869,
+    20586,
+    6363,
+    12080,
+    41389,
+    8050
+  ],
+  "h0_scale_python": 0.999999997677739,
+  "h0_scale_cpp": 0.9999999999989994,
+  "timing_method": {
+    "outer": "Python perf_counter_ns around the full adapter call; includes Python result construction and, for C++, ctypes/output conversion",
+    "cpp_kernel": "C++ astar_run internal steady_clock duration; excludes Python ctypes/output conversion",
+    "paired_order": "Configuration-language order shuffled deterministically within each query and round",
+    "quartiles": "Q1/Q3 computed with numpy.percentile default linear interpolation"
+  },
+  "correctness_checked_runs": 3000,
+  "python_preprocessing_ns": {
+    "graph_validation": 66108400,
+    "h0_scale": 273284000,
+    "plane": 102809100,
+    "reverse_graph": 174938800,
+    "landmark_selection": 522975500,
+    "alt_tables": 2519558300
+  },
+  "cpp_preprocessing_kernel_ns": {
+    "geometry": 8397900,
+    "reverse_graph": 12879700,
+    "alt": 259813200
+  },
+  "output_files": {
+    "raw_csv": "astar_timing_raw.csv",
+    "summary_csv": "astar_timing_summary.csv"
+  }
+}
