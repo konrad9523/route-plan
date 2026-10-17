@@ -1,0 +1,44 @@
+{
+  "environment": {
+    "python": "3.10.20",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "executable": "c:\\Users\\AngelXY\\miniconda3\\envs\\dl\\python.exe",
+    "recorded_at": "2026-10-16T20:34:43+08:00",
+    "baseline_commit": "eb3597934a548563f36078703df951ddae6aa6d6",
+    "baseline_file": "D:\\pycharm\\projects\\route_plan\\A3_临时工作区\\06_CHATGPT\\基础代码与优化测试结果\\dijkstra.py",
+    "baseline_sha256": "c8e711fdaac6c9e06053ac77800c023a184834e6579a1be9a04b6977def081cd"
+  },
+  "dataset": {
+    "file": "D:\\pycharm\\projects\\route_plan\\workspaces\\A3_性能\\武汉路网数据\\03_处理结果\\2026-10-16_武汉路网复核\\graph_v2.pkl",
+    "sha256": "fe7492eaadb4c0d058f8d00c78aa79ee9d6597ac23d4b3280b9c0d09faaf73fa",
+    "nodes": 91638,
+    "directed_edges": 207165,
+    "graph_policy": "wuhan-static-public-way-distance-v2.1",
+    "load_ms": 54.7637,
+    "adjacency_conversion_ms": 173.1126,
+    "l1_precheck_ms": 148.8764,
+    "b1_reverse_graph_build_ms": 112.6905
+  },
+  "queries": {
+    "file": "D:\\pycharm\\projects\\route_plan\\workspaces\\A3_性能\\武汉路网数据\\03_处理结果\\2026-10-16_武汉路网复核\\stratified_queries_100.json",
+    "sha256": "aa5c728689ec18f6ef0c20e8e11fdbc8fb17063cb871abd551021bb86ba6950c",
+    "count": 100,
+    "seed": 20261016
+  },
+  "benchmark": {
+    "rounds": 5,
+    "warmup_queries_per_layer": 5,
+    "order_seed": 20261016,
+    "timing": "perf_counter_ns; per-query randomized version order",
+    "layers": [
+      "L0",
+      "L1",
+      "L2",
+      "L3",
+      "L4",
+      "B1"
+    ],
+    "correctness_passed": true,
+    "reported_search_count": "settled_nodes returned by each implementation"
+  }
+}

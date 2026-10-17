@@ -1,0 +1,607 @@
+{
+  "seed": 20261016,
+  "graph_policy": "shenzhen-github-osm-car-distance-2021",
+  "strata_by": "endpoint Haversine distance (not route distance)",
+  "queries": [
+    {
+      "source": 34969,
+      "target": 190903,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 9707.06914417829
+    },
+    {
+      "source": 146981,
+      "target": 134951,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 20743.013330465423
+    },
+    {
+      "source": 174047,
+      "target": 178541,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 31294.025981568768
+    },
+    {
+      "source": 107534,
+      "target": 143591,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 7886.338291395249
+    },
+    {
+      "source": 77714,
+      "target": 116404,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 32497.20542964908
+    },
+    {
+      "source": 45662,
+      "target": 25830,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 17823.97334065008
+    },
+    {
+      "source": 185469,
+      "target": 153749,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 36676.60426290095
+    },
+    {
+      "source": 222517,
+      "target": 137983,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 5713.536575043222
+    },
+    {
+      "source": 60460,
+      "target": 138979,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 30860.609341414754
+    },
+    {
+      "source": 70552,
+      "target": 13912,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 13058.957806529228
+    },
+    {
+      "source": 43584,
+      "target": 190527,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 8592.42737635351
+    },
+    {
+      "source": 199953,
+      "target": 212761,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 12296.117521044054
+    },
+    {
+      "source": 164524,
+      "target": 195208,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 27494.54583164206
+    },
+    {
+      "source": 200694,
+      "target": 166020,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 45384.45289242398
+    },
+    {
+      "source": 168604,
+      "target": 171988,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 11079.850868023314
+    },
+    {
+      "source": 16111,
+      "target": 180052,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 19818.54840147941
+    },
+    {
+      "source": 846,
+      "target": 195111,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 4290.699629267227
+    },
+    {
+      "source": 233988,
+      "target": 157721,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 39133.211937726956
+    },
+    {
+      "source": 123757,
+      "target": 93830,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 26383.203958207527
+    },
+    {
+      "source": 147689,
+      "target": 107435,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 13375.228960525763
+    },
+    {
+      "source": 174156,
+      "target": 168164,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 25526.61400710011
+    },
+    {
+      "source": 166082,
+      "target": 94304,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 45588.832325801806
+    },
+    {
+      "source": 155165,
+      "target": 103389,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 40787.437896735755
+    },
+    {
+      "source": 122250,
+      "target": 31590,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 27462.166025591836
+    },
+    {
+      "source": 113004,
+      "target": 166902,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 19291.86142588873
+    },
+    {
+      "source": 110268,
+      "target": 91026,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 17823.345442661765
+    },
+    {
+      "source": 15826,
+      "target": 131296,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 5586.130244986183
+    },
+    {
+      "source": 158319,
+      "target": 60679,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 18197.201924771005
+    },
+    {
+      "source": 173246,
+      "target": 184896,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 21150.01405313966
+    },
+    {
+      "source": 7410,
+      "target": 124500,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 18426.263573867942
+    },
+    {
+      "source": 58526,
+      "target": 145744,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 44527.76342740006
+    },
+    {
+      "source": 133574,
+      "target": 82229,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 9176.3495527805
+    },
+    {
+      "source": 198988,
+      "target": 38657,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 35671.38292090467
+    },
+    {
+      "source": 200329,
+      "target": 36053,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 5542.781601370156
+    },
+    {
+      "source": 66061,
+      "target": 202129,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 18173.816346385684
+    },
+    {
+      "source": 224662,
+      "target": 136425,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 23773.30127777284
+    },
+    {
+      "source": 141383,
+      "target": 39127,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 20401.612980720685
+    },
+    {
+      "source": 206194,
+      "target": 24549,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 23573.520736243205
+    },
+    {
+      "source": 232804,
+      "target": 208015,
+      "straight_distance_band": "20-50km",
+      "straight_distance_m": 40656.07589455652
+    },
+    {
+      "source": 199389,
+      "target": 215356,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 54613.397133540704
+    },
+    {
+      "source": 124342,
+      "target": 20353,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 18300.962785743133
+    },
+    {
+      "source": 80060,
+      "target": 165307,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 2035.5004837362712
+    },
+    {
+      "source": 89626,
+      "target": 164827,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 55148.08051545852
+    },
+    {
+      "source": 90618,
+      "target": 156723,
+      "straight_distance_band": "5-20km",
+      "straight_distance_m": 15978.951468696872
+    },
+    {
+      "source": 214870,
+      "target": 124152,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 4819.209379742316
+    },
+    {
+      "source": 10562,
+      "target": 180057,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 51118.835769038604
+    },
+    {
+      "source": 63916,
+      "target": 53758,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 4978.435072324535
+    },
+    {
+      "source": 226299,
+      "target": 55854,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 50949.41115174174
+    },
+    {
+      "source": 10744,
+      "target": 161991,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 50934.031522036865
+    },
+    {
+      "source": 142820,
+      "target": 27250,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 57398.55784009286
+    },
+    {
+      "source": 149029,
+      "target": 86961,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 4327.231130083843
+    },
+    {
+      "source": 142755,
+      "target": 64516,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 56380.62630365575
+    },
+    {
+      "source": 120511,
+      "target": 182072,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 1091.6671124819761
+    },
+    {
+      "source": 45621,
+      "target": 201824,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 4208.043258803066
+    },
+    {
+      "source": 32650,
+      "target": 60504,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 3922.2606606963996
+    },
+    {
+      "source": 105873,
+      "target": 158389,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 2526.2337987674496
+    },
+    {
+      "source": 94635,
+      "target": 16467,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 3737.6216672046526
+    },
+    {
+      "source": 222157,
+      "target": 109812,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 54172.341287139076
+    },
+    {
+      "source": 36524,
+      "target": 171479,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 53766.489519018105
+    },
+    {
+      "source": 48055,
+      "target": 166118,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 57001.391412824785
+    },
+    {
+      "source": 189155,
+      "target": 147447,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 3205.3809417622656
+    },
+    {
+      "source": 209565,
+      "target": 19698,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 57886.886863198946
+    },
+    {
+      "source": 142807,
+      "target": 49101,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 64459.301280105654
+    },
+    {
+      "source": 125341,
+      "target": 31825,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 62008.73164357819
+    },
+    {
+      "source": 44307,
+      "target": 174444,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 57007.999860642434
+    },
+    {
+      "source": 125864,
+      "target": 96705,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 64854.41509925283
+    },
+    {
+      "source": 121559,
+      "target": 63223,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 2314.6915937100116
+    },
+    {
+      "source": 967,
+      "target": 116825,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 1572.4031793827505
+    },
+    {
+      "source": 157303,
+      "target": 15829,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 3460.416291154226
+    },
+    {
+      "source": 165491,
+      "target": 80762,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 4063.9189910596765
+    },
+    {
+      "source": 95820,
+      "target": 76723,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 63699.99441622974
+    },
+    {
+      "source": 201255,
+      "target": 8506,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 52220.375165177626
+    },
+    {
+      "source": 234618,
+      "target": 160909,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 82224.04514562702
+    },
+    {
+      "source": 113065,
+      "target": 56157,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 52688.60321142452
+    },
+    {
+      "source": 33041,
+      "target": 64404,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 3233.3382861726777
+    },
+    {
+      "source": 72996,
+      "target": 112822,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 3409.7277661934727
+    },
+    {
+      "source": 24704,
+      "target": 213577,
+      "straight_distance_band": ">=50km",
+      "straight_distance_m": 64888.1740434305
+    },
+    {
+      "source": 127162,
+      "target": 10964,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 4878.709561117954
+    },
+    {
+      "source": 128952,
+      "target": 228176,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 4190.463535558262
+    },
+    {
+      "source": 168514,
+      "target": 203337,
+      "straight_distance_band": "1-5km",
+      "straight_distance_m": 3526.3745896477194
+    },
+    {
+      "source": 36223,
+      "target": 43071,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 365.774220639201
+    },
+    {
+      "source": 146742,
+      "target": 49980,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 959.1507064267097
+    },
+    {
+      "source": 11221,
+      "target": 89869,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 857.6688526483429
+    },
+    {
+      "source": 49284,
+      "target": 154334,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 657.8370911078439
+    },
+    {
+      "source": 214764,
+      "target": 25761,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 987.8548799157609
+    },
+    {
+      "source": 138069,
+      "target": 100749,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 838.453980903571
+    },
+    {
+      "source": 123094,
+      "target": 61736,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 256.6889439435585
+    },
+    {
+      "source": 92567,
+      "target": 194007,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 749.336318713368
+    },
+    {
+      "source": 221121,
+      "target": 163234,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 915.715992631269
+    },
+    {
+      "source": 60169,
+      "target": 60156,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 275.9211149103868
+    },
+    {
+      "source": 164809,
+      "target": 164836,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 184.29662180451803
+    },
+    {
+      "source": 162381,
+      "target": 78801,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 229.97910332706886
+    },
+    {
+      "source": 38231,
+      "target": 181948,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 228.64409147043605
+    },
+    {
+      "source": 14530,
+      "target": 167584,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 482.8637671928853
+    },
+    {
+      "source": 221246,
+      "target": 221258,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 70.31399507129682
+    },
+    {
+      "source": 172525,
+      "target": 109973,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 711.8307969268077
+    },
+    {
+      "source": 204688,
+      "target": 197562,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 809.0824517383408
+    },
+    {
+      "source": 219395,
+      "target": 112326,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 366.7716283534683
+    },
+    {
+      "source": 70852,
+      "target": 110652,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 631.5266198527594
+    },
+    {
+      "source": 81396,
+      "target": 148203,
+      "straight_distance_band": "0-1km",
+      "straight_distance_m": 907.3528171733981
+    }
+  ]
+}

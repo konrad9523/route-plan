@@ -1,0 +1,418 @@
+{
+  "dataset": {
+    "path": "cache/a3_wuhan/processed/graph.pkl",
+    "nodes": 91638,
+    "directed_edges": 206383,
+    "largest_scc_nodes": 90284,
+    "weight_unit": "meter",
+    "bad_weights": 0,
+    "undefined_endpoints": 0
+  },
+  "queries": {
+    "seed": 2026,
+    "count": 50,
+    "ordered_pairs": [
+      [
+        31319,
+        81354
+      ],
+      [
+        13550,
+        65265
+      ],
+      [
+        3064,
+        65083
+      ],
+      [
+        84406,
+        70531
+      ],
+      [
+        79965,
+        1794
+      ],
+      [
+        58390,
+        37946
+      ],
+      [
+        9304,
+        44712
+      ],
+      [
+        90166,
+        52200
+      ],
+      [
+        23456,
+        68938
+      ],
+      [
+        91418,
+        34831
+      ],
+      [
+        3235,
+        62988
+      ],
+      [
+        71180,
+        49281
+      ],
+      [
+        38528,
+        38874
+      ],
+      [
+        46278,
+        6516
+      ],
+      [
+        30441,
+        88294
+      ],
+      [
+        56659,
+        10018
+      ],
+      [
+        47736,
+        46892
+      ],
+      [
+        54802,
+        22515
+      ],
+      [
+        29697,
+        36624
+      ],
+      [
+        50297,
+        70355
+      ],
+      [
+        4059,
+        29236
+      ],
+      [
+        4362,
+        83779
+      ],
+      [
+        44452,
+        14051
+      ],
+      [
+        34650,
+        63760
+      ],
+      [
+        81372,
+        33876
+      ],
+      [
+        53395,
+        54837
+      ],
+      [
+        49948,
+        60301
+      ],
+      [
+        70206,
+        57668
+      ],
+      [
+        29184,
+        91240
+      ],
+      [
+        73626,
+        13772
+      ],
+      [
+        54130,
+        13605
+      ],
+      [
+        28444,
+        62240
+      ],
+      [
+        56801,
+        65674
+      ],
+      [
+        8840,
+        60451
+      ],
+      [
+        23688,
+        45908
+      ],
+      [
+        5098,
+        13046
+      ],
+      [
+        28106,
+        83937
+      ],
+      [
+        84235,
+        66965
+      ],
+      [
+        7650,
+        79062
+      ],
+      [
+        10989,
+        60705
+      ],
+      [
+        79297,
+        52795
+      ],
+      [
+        51267,
+        87222
+      ],
+      [
+        47797,
+        81803
+      ],
+      [
+        33170,
+        72357
+      ],
+      [
+        48354,
+        85945
+      ],
+      [
+        45007,
+        34222
+      ],
+      [
+        69,
+        80237
+      ],
+      [
+        58081,
+        11128
+      ],
+      [
+        26548,
+        17439
+      ],
+      [
+        86442,
+        36079
+      ]
+    ],
+    "source": "unique ordered pairs sampled from largest SCC"
+  },
+  "method": {
+    "rounds": 5,
+    "timing": "interleaved; warm rows exclude preprocessing; cold control intentionally rebuilds",
+    "distance_tolerance_m": 0.00001,
+    "work_prepare_ms_once": 350.90819996548817,
+    "alt_landmark_count": 8,
+    "alt_prepare_ms_once": 1539.7681999602355
+  },
+  "landmarks": [
+    80958,
+    41381,
+    90950,
+    23065,
+    7710,
+    63630,
+    81237,
+    21829
+  ],
+  "correctness_vs_inbox_dijkstra": {
+    "L0 收件箱 Haversine A*": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    },
+    "控制组 工作版 Haversine（冷启动）": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    },
+    "L1 工作版 Haversine A*": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    },
+    "L2 工作版平面投影 A*": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    },
+    "控制组 ALT（不含平面）": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    },
+    "L3 平面投影 + ALT A*": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 0,
+      "invalid_edge_paths": 0
+    },
+    "L4 工作版双向 A*": {
+      "distance_mismatches": 0,
+      "max_abs_error_m": 5.820766091346741e-11,
+      "invalid_edge_paths": 0
+    }
+  },
+  "benchmark": {
+    "L0 收件箱 Haversine A*": {
+      "median_ms_per_query": 74.43474199972115,
+      "min_ms_per_query": 71.42743999953382,
+      "max_ms_per_query": 79.0340319997631,
+      "mean_expanded": 15814.14,
+      "mean_pushed": null,
+      "last_round_expanded_median": 8338.5,
+      "last_round_expanded_min": 132,
+      "last_round_expanded_max": 70774,
+      "last_round_pushed_median": null,
+      "last_round_pushed_min": null,
+      "last_round_pushed_max": null,
+      "round_ms_per_query": [
+        74.43474199972115,
+        71.81524400017224,
+        75.81000000005588,
+        71.42743999953382,
+        79.0340319997631
+      ]
+    },
+    "控制组 工作版 Haversine（冷启动）": {
+      "median_ms_per_query": 332.1441779995803,
+      "min_ms_per_query": 308.93456000019796,
+      "max_ms_per_query": 349.6857879997697,
+      "mean_expanded": 15814.14,
+      "mean_pushed": 18101.28,
+      "last_round_expanded_median": 8338.5,
+      "last_round_expanded_min": 132,
+      "last_round_expanded_max": 70774,
+      "last_round_pushed_median": 9581.5,
+      "last_round_pushed_min": 163,
+      "last_round_pushed_max": 79526,
+      "round_ms_per_query": [
+        308.93456000019796,
+        335.8830159995705,
+        315.69923400064,
+        332.1441779995803,
+        349.6857879997697
+      ]
+    },
+    "L1 工作版 Haversine A*": {
+      "median_ms_per_query": 58.8511379994452,
+      "min_ms_per_query": 57.12189199985005,
+      "max_ms_per_query": 60.7292539998889,
+      "mean_expanded": 15814.14,
+      "mean_pushed": 18101.28,
+      "last_round_expanded_median": 8338.5,
+      "last_round_expanded_min": 132,
+      "last_round_expanded_max": 70774,
+      "last_round_pushed_median": 9581.5,
+      "last_round_pushed_min": 163,
+      "last_round_pushed_max": 79526,
+      "round_ms_per_query": [
+        58.44540000078268,
+        60.7292539998889,
+        58.8511379994452,
+        59.28844799986109,
+        57.12189199985005
+      ],
+      "amortized_ms_per_query_for_this_batch": 65.86930199875496
+    },
+    "L2 工作版平面投影 A*": {
+      "median_ms_per_query": 48.82765399990603,
+      "min_ms_per_query": 42.640321999788284,
+      "max_ms_per_query": 51.15164199960418,
+      "mean_expanded": 15814.12,
+      "mean_pushed": 18101.24,
+      "last_round_expanded_median": 8338.5,
+      "last_round_expanded_min": 132,
+      "last_round_expanded_max": 70774,
+      "last_round_pushed_median": 9581.5,
+      "last_round_pushed_min": 163,
+      "last_round_pushed_max": 79526,
+      "round_ms_per_query": [
+        42.640321999788284,
+        50.02596399979666,
+        51.15164199960418,
+        48.14780200016685,
+        48.82765399990603
+      ],
+      "amortized_ms_per_query_for_this_batch": 55.8458179992158
+    },
+    "控制组 ALT（不含平面）": {
+      "median_ms_per_query": 26.6809639998246,
+      "min_ms_per_query": 25.73894399916753,
+      "max_ms_per_query": 26.891347999917343,
+      "mean_expanded": 4812.28,
+      "mean_pushed": 5809.02,
+      "last_round_expanded_median": 2681.5,
+      "last_round_expanded_min": 43,
+      "last_round_expanded_max": 26475,
+      "last_round_pushed_median": 3212,
+      "last_round_pushed_min": 68,
+      "last_round_pushed_max": 30549,
+      "round_ms_per_query": [
+        26.206466000294313,
+        26.6809639998246,
+        25.73894399916753,
+        26.88373400014825,
+        26.891347999917343
+      ]
+    },
+    "L3 平面投影 + ALT A*": {
+      "median_ms_per_query": 31.95486200042069,
+      "min_ms_per_query": 29.99432999989949,
+      "max_ms_per_query": 34.079431999707595,
+      "mean_expanded": 4530.12,
+      "mean_pushed": 5473.34,
+      "last_round_expanded_median": 2580.5,
+      "last_round_expanded_min": 43,
+      "last_round_expanded_max": 22919,
+      "last_round_pushed_median": 3175,
+      "last_round_pushed_min": 68,
+      "last_round_pushed_max": 26372,
+      "round_ms_per_query": [
+        34.079431999707595,
+        29.99432999989949,
+        31.315920000197366,
+        33.34784199949354,
+        31.95486200042069
+      ],
+      "amortized_ms_per_query_for_this_batch": 62.7502259996254
+    },
+    "L4 工作版双向 A*": {
+      "median_ms_per_query": 106.20455800089985,
+      "min_ms_per_query": 101.72935600043274,
+      "max_ms_per_query": 114.85275199986063,
+      "mean_expanded": 14648.36,
+      "mean_pushed": 16844.06,
+      "last_round_expanded_median": 11681.5,
+      "last_round_expanded_min": 109,
+      "last_round_expanded_max": 61222,
+      "last_round_pushed_median": 13370,
+      "last_round_pushed_min": 140,
+      "last_round_pushed_max": 69014,
+      "round_ms_per_query": [
+        114.85275199986063,
+        106.20455800089985,
+        101.72935600043274,
+        102.64776400057599,
+        114.05778000014834
+      ]
+    }
+  }
+}

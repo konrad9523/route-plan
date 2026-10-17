@@ -1,0 +1,20 @@
+﻿language,stage,elapsed_ms
+Shared,road/coordinate parse and CSR arrays,832.7134
+Shared,fixed-query SCC and stratified sampling,52.4939
+Python,adjacency and coordinate dictionaries,338.234
+Python,Dijkstra L1 full-graph precheck,302.0288
+Python,Dijkstra B1 reverse graph,192.4621
+C++,Dijkstra graph creation,51.3356
+C++,A* graph creation,18.1263
+Python,A* graph_validation,169.6549
+Python,A* h0_scale,787.1412
+Python,A* plane,317.9124
+Python,A* reverse_graph,175.2618
+Python,A* landmark_selection,1480.8097
+Python,A* alt_tables,6796.1061
+C++,A* geometry (outer),16.3649
+C++,A* geometry (kernel),16.3535
+C++,A* reverse graph (outer),25.4997
+C++,A* reverse graph (kernel),25.4865
+C++,A* ALT (outer),605.9638
+C++,A* ALT (kernel),605.9186
