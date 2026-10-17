@@ -1,0 +1,636 @@
+{
+  "generated_utc": "2026-10-16T10:18:39.752728+00:00",
+  "inputs": {
+    "pbf": "C:\\a1_osm_test\\dc.osm.pbf",
+    "old": "C:\\a1_osm_test\\dc_a1_1_fixed.graphml",
+    "new": "C:\\a1_osm_test\\dc_a1_2_fixed.graphml",
+    "output_prefix": "C:\\a1_osm_test\\a1_2_unified_test",
+    "pairs": 40,
+    "seed": 6053502,
+    "without_service": false
+  },
+  "counts": {
+    "old_nodes": 41666,
+    "new_nodes": 41679,
+    "old_edges": 99497,
+    "new_edges": 99543,
+    "old_nodes_removed": 0,
+    "old_node_coords_changed": 0,
+    "unchanged_old_edges": 99493,
+    "verified_subdivided_old_edges": 4,
+    "changed_old_edges": 4
+  },
+  "old_graph": {
+    "issues": {},
+    "issue_examples": {},
+    "weak": {
+      "count": 349,
+      "largest": 40066
+    },
+    "strong": {
+      "count": 895,
+      "largest": 39595
+    },
+    "isolated": 0,
+    "loops": {
+      "4957640102": 2,
+      "5438403228": 2
+    }
+  },
+  "new_graph": {
+    "issues": {},
+    "issue_examples": {},
+    "weak": {
+      "count": 345,
+      "largest": 40097
+    },
+    "strong": {
+      "count": 891,
+      "largest": 39626
+    },
+    "isolated": 0,
+    "loops": {
+      "4957640102": 2,
+      "5438403228": 2
+    }
+  },
+  "subdivisions": {
+    "unchanged_edges": 99493,
+    "changed_old_edges": 4,
+    "added_or_changed_new_edges": 50,
+    "subdivisions": [
+      {
+        "old": [
+          "1819089471",
+          "1354444673"
+        ],
+        "road": "Southeast Boulevard",
+        "segments": [
+          [
+            "1819089471",
+            "3624807352",
+            265.155
+          ],
+          [
+            "3624807352",
+            "3624807366",
+            282.504
+          ],
+          [
+            "3624807366",
+            "1354444673",
+            583.386
+          ]
+        ],
+        "old_length_m": 1131.045,
+        "new_length_m": 1131.045,
+        "length_delta_m": 0.0,
+        "exact_geometry": true,
+        "pass": true
+      },
+      {
+        "old": [
+          "1354444673",
+          "1819089471"
+        ],
+        "road": "Southeast Boulevard",
+        "segments": [
+          [
+            "1354444673",
+            "3624807366",
+            583.386
+          ],
+          [
+            "3624807366",
+            "3624807352",
+            282.504
+          ],
+          [
+            "3624807352",
+            "1819089471",
+            265.155
+          ]
+        ],
+        "old_length_m": 1131.045,
+        "new_length_m": 1131.045,
+        "length_delta_m": 0.0,
+        "exact_geometry": true,
+        "pass": true
+      },
+      {
+        "old": [
+          "1934652434",
+          "49764326"
+        ],
+        "road": "Rhode Island Avenue Northwest",
+        "segments": [
+          [
+            "1934652434",
+            "5932332549",
+            19.692
+          ],
+          [
+            "5932332549",
+            "49764326",
+            40.959
+          ]
+        ],
+        "old_length_m": 60.652,
+        "new_length_m": 60.651,
+        "length_delta_m": -0.001,
+        "exact_geometry": true,
+        "pass": true
+      },
+      {
+        "old": [
+          "49764326",
+          "1934652434"
+        ],
+        "road": "Rhode Island Avenue Northwest",
+        "segments": [
+          [
+            "49764326",
+            "5932332549",
+            40.959
+          ],
+          [
+            "5932332549",
+            "1934652434",
+            19.692
+          ]
+        ],
+        "old_length_m": 60.652,
+        "new_length_m": 60.651,
+        "length_delta_m": -0.001,
+        "exact_geometry": true,
+        "pass": true
+      }
+    ],
+    "pass": true
+  },
+  "permission": {
+    "candidate_ways": 33516,
+    "changed_ways": 11,
+    "restored_ways": 11,
+    "newly_blocked_ways": 0,
+    "changed_way_details": [
+      {
+        "id": 6052418,
+        "name": "First Street Northwest",
+        "tags": {
+          "highway": "tertiary",
+          "motor_vehicle": "designated",
+          "access": "no",
+          "oneway": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          49729902,
+          9131079899,
+          9131079898,
+          49729897,
+          9131079897,
+          49729895,
+          9131079896,
+          49729894,
+          3001288931,
+          5325469688
+        ]
+      },
+      {
+        "id": 6061205,
+        "name": "1st Street Northwest",
+        "tags": {
+          "highway": "residential",
+          "motor_vehicle": "designated",
+          "access": "no",
+          "oneway": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          49762355,
+          9131079892,
+          13146884334,
+          9131079893,
+          9131079894,
+          9131079895,
+          49848581,
+          10771457851,
+          49731740,
+          2791131036,
+          49729902
+        ]
+      },
+      {
+        "id": 50425284,
+        "name": "34th Street Northwest",
+        "tags": {
+          "highway": "residential",
+          "motor_vehicle": "yes",
+          "access": "private",
+          "oneway": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          49748393,
+          1797624114,
+          49748395
+        ]
+      },
+      {
+        "id": 357122797,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          3624807352,
+          7920049206,
+          3624807353,
+          8747929264,
+          8747929263,
+          3624807354,
+          3624807355,
+          3624807356,
+          3624807357,
+          3624807358,
+          3624807359,
+          3624807360,
+          3624807361,
+          3624807362,
+          7920049204,
+          3624807363,
+          4776365253,
+          3624807364,
+          3624807365,
+          3624807366
+        ]
+      },
+      {
+        "id": 493044665,
+        "name": "First Street Northwest",
+        "tags": {
+          "highway": "tertiary",
+          "motor_vehicle": "designated",
+          "access": "no",
+          "oneway": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          3001288930,
+          4849891015,
+          5437725983,
+          49729902
+        ]
+      },
+      {
+        "id": 566302862,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          5453734928,
+          13233967635,
+          5453734927,
+          5453734926,
+          5453734925,
+          5453734924,
+          5453734922
+        ]
+      },
+      {
+        "id": 566334462,
+        "name": "Water Street Southeast",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "yes",
+          "access": "private"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          5453971267,
+          5453971260,
+          5453971259,
+          5453971258,
+          11533847356,
+          9657405703,
+          5453971257
+        ]
+      },
+      {
+        "id": 628378841,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "discouraged",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          5446788696,
+          6052772974,
+          7134795171,
+          5932332549
+        ]
+      },
+      {
+        "id": 848845368,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          7920049206,
+          7920049196,
+          7920049197,
+          7920049198,
+          7920049199,
+          7920049200,
+          7920049201,
+          7920049202,
+          7920049203,
+          7920049204
+        ]
+      },
+      {
+        "id": 944921560,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          8747929264,
+          13233967633,
+          7920049198
+        ]
+      },
+      {
+        "id": 1442272436,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "node_refs": [
+          7520762088,
+          13233967632,
+          13233967631,
+          13233967630,
+          4776365253
+        ]
+      }
+    ],
+    "restored_way_validation": [
+      {
+        "id": 6052418,
+        "name": "First Street Northwest",
+        "tags": {
+          "highway": "tertiary",
+          "motor_vehicle": "designated",
+          "access": "no",
+          "oneway": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 9,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 6061205,
+        "name": "1st Street Northwest",
+        "tags": {
+          "highway": "residential",
+          "motor_vehicle": "designated",
+          "access": "no",
+          "oneway": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 10,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 50425284,
+        "name": "34th Street Northwest",
+        "tags": {
+          "highway": "residential",
+          "motor_vehicle": "yes",
+          "access": "private",
+          "oneway": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 2,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 357122797,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 19,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 493044665,
+        "name": "First Street Northwest",
+        "tags": {
+          "highway": "tertiary",
+          "motor_vehicle": "designated",
+          "access": "no",
+          "oneway": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 3,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 566302862,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 6,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 566334462,
+        "name": "Water Street Southeast",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "yes",
+          "access": "private"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 6,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 628378841,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "discouraged",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 3,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 848845368,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 9,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 944921560,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 2,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      },
+      {
+        "id": 1442272436,
+        "name": "",
+        "tags": {
+          "highway": "service",
+          "motor_vehicle": "permit",
+          "access": "no"
+        },
+        "old_allowed": false,
+        "new_allowed": true,
+        "direction": 0,
+        "segments": 4,
+        "coordinate_nodes_found": true,
+        "missing_directed_segments": [],
+        "pass": true
+      }
+    ]
+  },
+  "routing": {
+    "pairs": 40,
+    "seed": 6053502,
+    "modes": [
+      "length",
+      "time"
+    ],
+    "comparisons": 80,
+    "reachable_new": 80,
+    "failures": [],
+    "failure_count": 0,
+    "pass": true
+  },
+  "historical_cases": {
+    "6053502": true,
+    "50425284": true,
+    "verified_loops": true
+  },
+  "checks": {
+    "input_graphs_parse": true,
+    "old_nodes_preserved": true,
+    "old_edges_preserved_or_verified_exactly_split": true,
+    "new_graph_all_edges_valid": true,
+    "new_graph_no_isolated_nodes": true,
+    "all_permission_changes_are_restorations": true,
+    "all_restored_ways_present_with_correct_directions": true,
+    "way_50425284_restored": true,
+    "a1_1_way_6053502_preserved": true,
+    "verified_service_loops_preserved": true,
+    "sampled_route_costs_consistent": true
+  },
+  "result": "PASS",
+  "scope_note": "Full graph and PBF candidate-way checks; OD routing uses seeded sampling and independent node-state Dijkstra/A*. Conditional access and turn restrictions are out of scope."
+}

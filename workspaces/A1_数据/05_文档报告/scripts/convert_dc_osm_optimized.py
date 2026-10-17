@@ -36,13 +36,20 @@ RESTRICTED = {"no", "private", "agricultural", "forestry"}
 
 def allowed(tags, without_service=False):
     road = tags.get("highway", "")
+
     if road not in DRIVABLE or (without_service and road == "service"):
         return False
-    for key in ("motor_vehicle", "motorcar", "vehicle", "access"):
-        if tags.get(key, "").lower() in RESTRICTED:
-            return False
+
     if tags.get("area") == "yes" or tags.get("construction"):
         return False
+
+    # 汽车访问权限优先级：由具体到一般
+    for key in ("motorcar", "motor_vehicle", "vehicle", "access"):
+        value = tags.get(key, "").strip().lower()
+        if value:
+            return value not in RESTRICTED
+
+    # 未设置访问权限标签时，沿用原有默认准入规则
     return True
 
 def speed_kmh(tags, road):
@@ -114,6 +121,19 @@ class CollectCoordinates(osmium.SimpleHandler):
         if node.id in self.wanted and node.location.valid():
             self.coords[node.id] = (node.location.lon, node.location.lat)
 
+def split_indices(refs, usage):
+    """Choose split positions, including an internal vertex for closed ways."""
+    indices = [
+        i for i, ref in enumerate(refs)
+        if i == 0 or i == len(refs) - 1 or usage[ref] > 1
+    ]
+    if len(refs) > 2 and refs[0] == refs[-1] and len(indices) == 2:
+        for i in range(1, len(refs) - 1):
+            if refs[i] != refs[0]:
+                indices.insert(1, i)
+                break
+    return indices
+
 def convert(pbf, dest, no_service=False):
     collector = CollectWays(no_service)
     collector.apply_file(str(pbf))
@@ -130,11 +150,10 @@ def convert(pbf, dest, no_service=False):
     # edge's LINESTRING geometry, but are not independent GraphML nodes.
     node_ids = set()
     for wid, refs, tags, road, d in collector.ways:
-        indices = [i for i, ref in enumerate(refs)
-                   if i == 0 or i == len(refs) - 1 or collector.usage[ref] > 1]
+        indices = split_indices(refs, collector.usage)
         for i0, i1 in zip(indices, indices[1:]):
             seg = refs[i0:i1 + 1]
-            if len(seg) < 2 or seg[0] == seg[-1]:
+            if len(seg) < 2:
                 continue
             if any(nid not in coords.coords for nid in seg):
                 continue
@@ -152,7 +171,10 @@ def convert(pbf, dest, no_service=False):
         for key, kind, typ in [('x','node','double'),('y','node','double'),
                                ('length','edge','double'),('speed_kph','edge','double'),
                                ('highway','edge','string'),('geometry','edge','string'),
-                               ('name','edge','string'),('toll','edge','string')]:
+                               ('name','edge','string'),('toll','edge','string'),
+                               ('osmid','edge','string'),
+                               ('maxspeed_raw','edge','string'),
+                               ('speed_source','edge','string')]:
             f.write(f'<key id="{key}" for="{kind}" attr.name="{key}" attr.type="{typ}"/>\n')
         f.write('<graph edgedefault="directed">\n')
         for nid in sorted(node_ids):
@@ -163,13 +185,13 @@ def convert(pbf, dest, no_service=False):
             if not explicit: default_speeds += 1
             road_counts[road] += 1
             # Split ways at shared nodes, with endpoints always intersections.
-            indices = [i for i, ref in enumerate(refs) if i == 0 or i == len(refs)-1 or collector.usage[ref] > 1]
+            indices = split_indices(refs, collector.usage)
             for i0, i1 in zip(indices, indices[1:]):
                 seg = refs[i0:i1+1]
                 if any(nid not in coords.coords for nid in seg):
                     missing += 1
                     continue
-                if seg[0] == seg[-1] or len(seg) < 2: continue
+                if len(seg) < 2: continue
                 length = sum(haversine(*coords.coords[a], *coords.coords[b]) for a,b in zip(seg, seg[1:]))
                 if length <= 0: continue
                 count_segments += 1
@@ -179,7 +201,10 @@ def convert(pbf, dest, no_service=False):
                     f.write(f'<edge id="{count_edges}" source="{oriented[0]}" target="{oriented[-1]}">')
                     for k, v in [('length', f'{length:.3f}'), ('speed_kph', speed),
                                  ('highway', road), ('geometry',geom),
-                                 ('name',tags.get('name','')), ('toll', tags.get('toll','no'))]:
+                                 ('name',tags.get('name','')), ('toll', tags.get('toll','no')),
+                                 ('osmid',str(wid)),
+                                 ('maxspeed_raw',tags.get('maxspeed','')),
+                                 ('speed_source','osm_maxspeed' if explicit else 'default')]:
                         f.write(f'<data key="{k}">{xml(v)}</data>')
                     f.write('</edge>\n')
                     count_edges += 1

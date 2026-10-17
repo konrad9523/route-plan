@@ -1,0 +1,99 @@
+{
+  "source_file": "shenzhen.osm.pbf",
+  "source_size_bytes": 16629708,
+  "created_utc": "2026-10-14T08:39:35.440351+00:00",
+  "counts": {
+    "osm_nodes": 1980792,
+    "osm_ways": 232546,
+    "osm_relations": 5266,
+    "highway_tagged_ways": 102907,
+    "restriction_relations": 970
+  },
+  "highway_types": {
+    "footway": 27868,
+    "service": 17612,
+    "residential": 8984,
+    "tertiary": 6770,
+    "primary": 5722,
+    "steps": 4905,
+    "secondary": 4728,
+    "unclassified": 4556,
+    "path": 4195,
+    "primary_link": 3178,
+    "cycleway": 2476,
+    "construction": 1707,
+    "trunk": 1690,
+    "motorway_link": 1642,
+    "motorway": 1553,
+    "trunk_link": 1340,
+    "secondary_link": 1241,
+    "pedestrian": 899,
+    "tertiary_link": 656,
+    "living_street": 444,
+    "track": 397,
+    "proposed": 143,
+    "corridor": 97,
+    "busway": 54,
+    "raceway": 12,
+    "services": 12,
+    "disused": 7,
+    "elevator": 5,
+    "planned": 4,
+    "rest_area": 4,
+    "escape": 2,
+    "bus_stop": 1,
+    "close": 1,
+    "road": 1,
+    "stt": 1
+  },
+  "oneway_tags_on_highway_ways": {
+    "<missing>": 69129,
+    "yes": 30424,
+    "no": 3303,
+    "-1": 50,
+    "reversible": 1
+  },
+  "maxspeed_presence_on_highway_ways": {
+    "missing": 100164,
+    "present": 2743
+  },
+  "access_tags_on_highway_ways": {
+    "<missing>": 100027,
+    "private": 1413,
+    "no": 880,
+    "yes": 215,
+    "permit": 187,
+    "permissive": 79,
+    "destination": 62,
+    "bus": 23,
+    "customers": 14,
+    "designated": 5,
+    "service": 1,
+    "unknown": 1
+  },
+  "motor_vehicle_tags_on_highway_ways": {
+    "<missing>": 101452,
+    "permit": 434,
+    "no": 415,
+    "yes": 382,
+    "destination": 75,
+    "private": 61,
+    "designated": 50,
+    "permissive": 38
+  },
+  "restriction_types": {
+    "no_right_turn": 409,
+    "only_straight_on": 311,
+    "no_left_turn": 104,
+    "no_u_turn": 86,
+    "only_left_turn": 28,
+    "only_right_turn": 16,
+    "no_straight_on": 14,
+    "only_u_turn": 2
+  },
+  "notes": [
+    "OSM ways are not yet routing edges; intersections and topology have not been constructed.",
+    "Missing oneway does not always mean bidirectional; roundabouts and road classes need special handling.",
+    "The counts include non-drivable highway categories; motor-car access filtering is a later step."
+  ]
+}
