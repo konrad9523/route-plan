@@ -1,5 +1,9 @@
 /* Leaflet implementation of the Tkinter prototype's draw/replay/contractions/drive flow. */
 const map = L.map('map', { zoomControl: true, preferCanvas: true }).setView([30.506, 114.406], 14);
+map.createPane('roadNetworkPane');
+map.getPane('roadNetworkPane').style.zIndex = 390;
+map.getPane('roadNetworkPane').style.pointerEvents = 'none';
+const roadRenderer = L.svg({ padding: 0.5, pane: 'roadNetworkPane' });
 const basemapLayers = {
   osmde: L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -39,6 +43,7 @@ const layers = { roads: L.layerGroup().addTo(map), annotations: L.layerGroup().a
 let startKey = null;
 let endKey = null;
 let activeRoute = [];
+let activeRouteEdges = [];
 let busy = false;
 let animationToken = 0;
 let clickSelectStart = true;
@@ -59,16 +64,34 @@ let selectedDrawingLayer = null;
 let leftPanelCollapsed = false;
 let rightPanelCollapsed = false;
 let lastSearchStats = { expanded: 0, elapsed: 0 };
+let routeHistory = [];
+let routeSequence = 0;
+let activeRouteHistoryItem = null;
+let routeSummaryCollapsed = false;
+let navigationPanelOpen = false;
 let routeMotionToken = 0;
 let osmNetwork = null;
 let networkLoading = false;
+let networkVisible = true;
+let networkContrast = true;
+let viewportCoverageTimer = null;
+let lastViewportCoverageRequest = '';
 let graphCacheNetwork = null;
 let graphCache = null;
+let heuristicCacheNetwork = null;
+let heuristicCacheSignature = '';
+let heuristicCacheScale = 0;
 const osmNearestCache = new Map();
-// 默认加载武汉中心城区的可交互窗口，只取 OSM 主要道路以控制浏览器渲染量。
+// 正常模式由本地服务器保存完整武汉路网，浏览器只按区域请求；本地小文件仅作备用。
 const OSM_BBOX = '30.496,114.396,30.516,114.416';
+const OSM_HIGHWAY_PATTERN = 'motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link';
+const OSM_EXPANSION_MAX = { lat: 0.06, lon: 0.08 };
 const OSM_ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
-const LOCAL_NETWORK_URL = 'data/wuhan-main-roads.json';
+const STATIC_NETWORK_URL = 'data/server/wuhan-main-roads.json';
+const SERVER_NETWORK_URL = '/api/network';
+const OSM_SNAP_MAX_DISTANCE = 650;
+const OSM_FALLBACK_SNAP_DISTANCE = 1800;
+const OSM_POINT_REQUEST_SPAN = { lat: 0.025, lon: 0.035 };
 const endpointSnaps = new Map();
 // 保留空数组仅用于兼容旧的隐藏绘图代码，路网加载不会填充任何 POI。
 const navigationPois = [];
@@ -77,8 +100,9 @@ const $ = (id) => document.getElementById(id);
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const point = (key) => osmNetwork?.nodes[key] || nodes[key];
 const latLngs = (ids) => ids.map(id => point(id));
-const setText = (id, value) => { $(id).textContent = value; };
+const setText = (id, value) => { const element = $(id); if (element) element.textContent = value; };
 const setFieldValue = (id, value) => { $(id).value = value; };
+const ROUTE_HISTORY_LIMIT = 8;
 const skinDefinitions = {
   flower: { label: '樱花青柠' },
   sky: { label: '晴空云朵' },
@@ -172,19 +196,32 @@ function matchPointToRoad(coords, network) {
     }
     if (candidates.size) break;
   }
-  (candidates.size ? [...candidates] : network.roads).forEach((road) => {
+  const candidateRoads = candidates.size ? [...candidates] : network.roads;
+  candidateRoads.forEach((road) => {
     const projection = projectToSegment(coords, network.nodes[road.from], network.nodes[road.to]);
     if (!best || projection.distance < best.distance) {
       best = { road, ...projection };
     }
   });
+  // 网格索引只用于缩小第一次搜索范围；如果结果仍较远，再完整检查一次，
+  // 避免用户点击在网格边界附近时误判为“超出距离”。
+  if (candidates.size && best && best.distance > OSM_SNAP_MAX_DISTANCE) {
+    network.roads.forEach((road) => {
+      if (candidates.has(road)) return;
+      const projection = projectToSegment(coords, network.nodes[road.from], network.nodes[road.to]);
+      if (projection.distance < best.distance) best = { road, ...projection };
+    });
+  }
   return best;
 }
 
 function snapEndpointToNode(kind, coords) {
   if (!osmNetwork || !coords) return null;
-  const key = nearestOsmNode(coords);
-  if (!key) return null;
+  const match = matchPointToRoad(coords, osmNetwork);
+  if (!match) return null;
+  const fromDistance = geographicDistance(coords, osmNetwork.nodes[match.road.from]);
+  const toDistance = geographicDistance(coords, osmNetwork.nodes[match.road.to]);
+  const key = fromDistance <= toDistance ? match.road.from : match.road.to;
   endpointSnaps.delete(kind);
   return key;
 }
@@ -203,7 +240,7 @@ function parseOsmNetwork(elements) {
   ways.forEach((way) => {
     const highway = way.tags.highway;
     const oneWayValue = String(way.tags.oneway || '').toLowerCase();
-    const oneWay = ['yes', 'true', '1', 'alternating'].includes(oneWayValue);
+    const oneWay = ['yes', 'true', '1', 'alternating', '-1'].includes(oneWayValue);
     const reverseWay = oneWayValue === '-1';
     const geometry = Array.isArray(way.geometry) ? way.geometry : [];
     const hasGeometry = geometry.length > 0;
@@ -226,6 +263,7 @@ function parseOsmNetwork(elements) {
         to,
         highway,
         oneWay,
+        edgeId: `osm:way:${way.id}:${index}`,
         name: way.tags.name || 'OSM 道路',
         distance: geographicDistance(parsedNodes[from], parsedNodes[to])
       });
@@ -242,29 +280,36 @@ function parseOsmNetwork(elements) {
   return network;
 }
 
-function installOsmNetwork(parsed, sourceLabel) {
+function installOsmNetwork(parsed, sourceLabel, { preserveEndpoints = false, fit = true } = {}) {
+  if (preserveEndpoints && osmNetwork) parsed = mergeOsmNetworks(osmNetwork, parsed);
   osmNetwork = parsed;
   graphCacheNetwork = null;
   graphCache = null;
+  heuristicCacheNetwork = null;
+  heuristicCacheSignature = '';
   endpointSnaps.clear();
-  startKey = null;
-  endKey = null;
-  clickSelectStart = true;
-  navWaypointKeys.length = 0;
-  setFieldValue('startNode', '');
-  setFieldValue('endNode', '');
+  if (!preserveEndpoints) {
+    startKey = null;
+    endKey = null;
+    clickSelectStart = true;
+    navWaypointKeys.length = 0;
+    setFieldValue('startNode', '');
+    setFieldValue('endNode', '');
+  } else {
+    clickSelectStart = !startKey;
+  }
   osmNearestCache.clear();
   layers.search.clearLayers(); layers.searchEdges.clearLayers(); layers.searchFrontier.clearLayers();
   activeRoute = [];
+  activeRouteEdges = [];
   draw();
   updateMetrics(false);
-  document.querySelector('.workspace')?.classList.add('network-ready', 'menu-open');
+  document.querySelector('.workspace')?.classList.add('network-ready');
   document.querySelector('.workspace')?.classList.remove('route-planned');
-  $('menuBtn')?.setAttribute('aria-expanded', 'true');
-  setText('networkStatus', `${sourceLabel} 道路 ${parsed.roads.length.toLocaleString()} 段 · 点击地图放置端点`);
-  setStatus(`${sourceLabel} 路网已加载 · ${parsed.roads.length.toLocaleString()} 段道路`, 'ready');
+  setText('networkStatus', `${sourceLabel} · ${parsed.roads.length.toLocaleString()} 段道路`);
+  setStatus(`${sourceLabel} · 共 ${parsed.roads.length.toLocaleString()} 段道路`, 'ready');
   updateNavStopSummary();
-  if (parsed.roads.length) map.fitBounds(L.latLngBounds(parsed.renderRoads.slice(0, 3000).flatMap((road) => [point(road.from), point(road.to)])), { padding: [55, 55], maxZoom: 14, animate: true });
+  if (fit && parsed.roads.length) map.fitBounds(L.latLngBounds(parsed.renderRoads.slice(0, 3000).flatMap((road) => [point(road.from), point(road.to)])), { padding: [55, 55], maxZoom: 14, animate: true });
 }
 
 function validateOsmNetwork(parsed) {
@@ -272,52 +317,307 @@ function validateOsmNetwork(parsed) {
   return parsed;
 }
 
-async function loadOsmNetwork() {
-  if (networkLoading) return;
-  networkLoading = true;
-  const button = $('loadNetworkBtn');
-  if (button) button.disabled = true;
-  setText('networkStatus', '正在加载武汉 OSM 路网…');
-  setStatus('正在加载武汉城区真实路网…', 'live');
-  const query = `[out:json][timeout:45];way["highway"~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link)$"](${OSM_BBOX});out body geom;`;
-  let lastError = null;
+function mergeOsmNetworks(base, addition) {
+  const nodes = { ...base.nodes, ...addition.nodes };
+  const roadsById = new Map();
+  [...base.roads, ...addition.roads].forEach((road, index) => {
+    const key = road.edgeId || `${road.from}>${road.to}|${road.name || ''}|${road.distance || 0}`;
+    if (!roadsById.has(key)) roadsById.set(key, { ...road, edgeId: road.edgeId || `merged:${index}:${key}` });
+  });
+  const roads = [...roadsById.values()].filter((road) => nodes[road.from] && nodes[road.to]);
+  const merged = { nodes, roads, renderRoads: roads };
+  merged.roadNodeKeys = new Set(roads.flatMap((road) => [road.from, road.to]));
+  merged.roadNames = new Map();
+  roads.forEach((road) => {
+    merged.roadNames.set(`${road.from}>${road.to}`, road.name);
+    if (!road.oneWay) merged.roadNames.set(`${road.to}>${road.from}`, road.name);
+  });
+  buildRoadSpatialIndex(merged);
+  return merged;
+}
+
+function syncNetworkDisplay() {
+  const mapContainer = map.getContainer();
+  // 底图压暗是独立的显示设置，不应等路网加载完成后才生效。
+  mapContainer.classList.toggle('network-focus', Boolean(networkVisible && networkContrast));
+  const visibilityControl = $('networkVisibility');
+  const contrastControl = $('networkContrast');
+  if (visibilityControl) visibilityControl.checked = networkVisible;
+  if (contrastControl) contrastControl.checked = networkContrast;
+}
+
+function installNetworkPayload(payload, sourceLabel, options = {}) {
+  installOsmNetwork(validateOsmNetwork(parseOsmNetwork(payload.elements || [])), sourceLabel, options);
+}
+
+async function loadNetworkFile(file) {
+  if (!file) return;
+  setText('networkStatus', `正在读取 ${file.name}…`);
+  setStatus('正在读取本地 OSM 路网文件…', 'live');
   try {
+    installNetworkPayload(JSON.parse(await file.text()), '本地 OSM');
+  } catch (error) {
+    setText('networkStatus', 'OSM 路网未加载 · 文件格式错误');
+    setStatus(`本地路网读取失败 · ${error.message}`, 'ready');
+  }
+}
+
+function buildOsmQuery(bbox) {
+  return `[out:json][timeout:45];way["highway"~"^(${OSM_HIGHWAY_PATTERN})$"](${bbox});out body geom;`;
+}
+
+function currentExpansionBbox() {
+  const bounds = map.getBounds();
+  const center = map.getCenter();
+  const visibleLatSpan = bounds.getNorth() - bounds.getSouth();
+  const visibleLonSpan = bounds.getEast() - bounds.getWest();
+  const latSpan = Math.min(Math.max(visibleLatSpan * 1.15, 0.03), OSM_EXPANSION_MAX.lat);
+  const lonSpan = Math.min(Math.max(visibleLonSpan * 1.15, 0.04), OSM_EXPANSION_MAX.lon);
+  const south = center.lat - latSpan / 2;
+  const west = center.lng - lonSpan / 2;
+  const north = center.lat + latSpan / 2;
+  const east = center.lng + lonSpan / 2;
+  return [south, west, north, east].map((value) => value.toFixed(5)).join(',');
+}
+
+async function fetchOsmPayload(bbox, { allowOverpass = true } = {}) {
+  // The local server is the normal path. It reads the complete Wuhan extract
+  // from disk and returns only the requested bbox to keep browser rendering fast.
+  let serverError = null;
+  if (window.location.protocol !== 'file:') {
     try {
-      const localController = new AbortController();
-      const localTimeout = window.setTimeout(() => localController.abort(), 10000);
-      try {
-        const response = await fetch(LOCAL_NETWORK_URL, { cache: 'no-store', signal: localController.signal, headers: { Accept: 'application/json' } });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
-        installOsmNetwork(validateOsmNetwork(parseOsmNetwork(payload.elements || [])), '本地 OSM');
-        return;
-      } finally {
-        window.clearTimeout(localTimeout);
-      }
-    } catch (error) {
-      lastError = error;
-    }
-    for (const endpoint of OSM_ENDPOINTS) {
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 30000);
+      const timeout = window.setTimeout(() => controller.abort(), 15000);
       try {
-        const response = await fetch(`${endpoint}?data=${encodeURIComponent(query)}`, { signal: controller.signal, headers: { Accept: 'application/json' } });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const response = await fetch(`${SERVER_NETWORK_URL}?bbox=${encodeURIComponent(bbox)}`, { cache: 'no-store', signal: controller.signal, headers: { Accept: 'application/json' } });
+        if (!response.ok) {
+          const detail = await response.json().catch(() => ({}));
+          throw new Error(detail.error || `服务器 HTTP ${response.status}`);
+        }
         const payload = await response.json();
-        const parsed = validateOsmNetwork(parseOsmNetwork(payload.elements || []));
-        installOsmNetwork(parsed, '在线 OSM');
-        return;
-      } catch (error) {
-        lastError = error;
+        if (!Array.isArray(payload.elements) || payload.elements.length < 20) throw new Error('服务器当前区域没有足够路网');
+        return payload;
       } finally {
         window.clearTimeout(timeout);
       }
+    } catch (error) {
+      serverError = error;
+      console.warn('服务器路网请求失败:', error);
     }
-    throw lastError || new Error('路网服务不可用');
+  }
+  if (!allowOverpass) throw serverError || new Error('服务器路网服务不可用');
+  const query = buildOsmQuery(bbox);
+  let lastError = null;
+  for (const endpoint of OSM_ENDPOINTS) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 45000);
+    try {
+      const response = await fetch(`${endpoint}?data=${encodeURIComponent(query)}`, { signal: controller.signal, headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+  throw lastError || new Error('路网服务不可用');
+}
+
+function pointExpansionBbox(coords) {
+  const latSpan = OSM_POINT_REQUEST_SPAN.lat;
+  const lonSpan = OSM_POINT_REQUEST_SPAN.lon;
+  const south = coords[0] - latSpan / 2;
+  const west = coords[1] - lonSpan / 2;
+  const north = coords[0] + latSpan / 2;
+  const east = coords[1] + lonSpan / 2;
+  return [south, west, north, east].map((value) => value.toFixed(5)).join(',');
+}
+
+function hasNearbyRoad(coords) {
+  if (!osmNetwork) return false;
+  const match = matchPointToRoad(coords, osmNetwork);
+  return Boolean(match && match.distance <= OSM_SNAP_MAX_DISTANCE);
+}
+
+async function ensureOsmCoverage(latlng) {
+  const coords = [latlng.lat, latlng.lng];
+  if (hasNearbyRoad(coords)) return true;
+  if (networkLoading) {
+    setStatus('路网数据正在准备，请稍候再选择位置', 'live');
+    return false;
+  }
+  if (window.location.protocol === 'file:') {
+    setStatus('当前页面无法自动请求路网，请使用本地服务器打开', 'ready');
+    return false;
+  }
+  networkLoading = true;
+  const bbox = pointExpansionBbox(coords);
+  setText('networkStatus', '正在从服务器读取选点附近道路…');
+  setStatus('正在从服务器读取选点附近 OSM 道路…', 'live');
+  try {
+    const payload = await fetchOsmPayload(bbox);
+    installNetworkPayload(payload, '服务器 OSM', { preserveEndpoints: Boolean(osmNetwork), fit: false });
+    const match = matchPointToRoad(coords, osmNetwork);
+    if (!match || match.distance > OSM_FALLBACK_SNAP_DISTANCE) throw new Error('选点附近没有可用的主要道路');
+    setText('networkStatus', '服务器路网已按选点补充');
+    setStatus(match.distance <= OSM_SNAP_MAX_DISTANCE ? '已从服务器补充选点附近路网' : '附近主要道路较远，已吸附到最近道路', 'ready');
+    return true;
   } catch (error) {
-    setText('networkStatus', 'OSM 路网未加载 · 可重试');
+    const reason = error.name === 'AbortError' ? '请求超时' : error.message || '服务暂不可用';
+    setText('networkStatus', '自动补充失败 · 可重新点击地图');
+    setStatus(`附近路网请求失败 · ${reason}`, 'ready');
+    return false;
+  } finally {
+    networkLoading = false;
+  }
+}
+
+async function ensureViewportCoverage() {
+  if (!osmNetwork || networkLoading || window.location.protocol === 'file:') return;
+  const center = map.getCenter();
+  if (hasNearbyRoad([center.lat, center.lng])) return;
+  const bbox = currentExpansionBbox();
+  if (!bbox || bbox === lastViewportCoverageRequest) return;
+  lastViewportCoverageRequest = bbox;
+  networkLoading = true;
+  setStatus('正在从服务器准备当前地图区域的 OSM 道路…', 'live');
+  try {
+    const payload = await fetchOsmPayload(bbox);
+    installNetworkPayload(payload, '服务器当前区域 OSM', { preserveEndpoints: Boolean(osmNetwork), fit: false });
+    setStatus('当前地图区域道路已准备完成，可直接选点', 'ready');
+  } catch (error) {
+    lastViewportCoverageRequest = '';
+    const reason = error.name === 'AbortError' ? '请求超时' : error.message || '服务暂不可用';
+    setStatus(`当前区域道路准备失败 · ${reason}`, 'ready');
+  } finally {
+    networkLoading = false;
+  }
+}
+
+function scheduleViewportCoverage() {
+  if (viewportCoverageTimer) window.clearTimeout(viewportCoverageTimer);
+  viewportCoverageTimer = window.setTimeout(() => {
+    viewportCoverageTimer = null;
+    ensureViewportCoverage();
+  }, 650);
+}
+
+function routeExpansionBbox() {
+  const start = point(startKey);
+  const end = point(endKey);
+  if (!start || !end) return null;
+  const margin = 0.015;
+  const south = Math.min(start[0], end[0]) - margin;
+  const west = Math.min(start[1], end[1]) - margin;
+  const north = Math.max(start[0], end[0]) + margin;
+  const east = Math.max(start[1], end[1]) + margin;
+  // 起点和终点必须都落在请求范围内；小范围时使用固定最小边界，
+  // 远距离规划则保留完整包络，避免裁掉其中一个端点。
+  const latSpan = Math.max(north - south, 0.02);
+  const lonSpan = Math.max(east - west, 0.03);
+  return [
+    Math.min(south, (south + north) / 2 - latSpan / 2),
+    Math.min(west, (west + east) / 2 - lonSpan / 2),
+    Math.max(north, (south + north) / 2 + latSpan / 2),
+    Math.max(east, (west + east) / 2 + lonSpan / 2)
+  ].map((value) => value.toFixed(5)).join(',');
+}
+
+async function ensureRouteCoverage() {
+  if (!osmNetwork || !startKey || !endKey || window.location.protocol === 'file:') return false;
+  const requestKey = `${startKey}>${endKey}|${navWaypointKeys.join(',')}`;
+  if (ensureRouteCoverage.lastRequest === requestKey) return false;
+  ensureRouteCoverage.lastRequest = requestKey;
+  while (networkLoading) await delay(80);
+  networkLoading = true;
+  const bbox = routeExpansionBbox();
+  if (!bbox) {
+    networkLoading = false;
+    return false;
+  }
+  setStatus('当前区域道路不连通，正在从服务器补充起终点之间的路网…', 'live');
+  try {
+    const payload = await fetchOsmPayload(bbox);
+    installNetworkPayload(payload, '服务器路线区域 OSM', { preserveEndpoints: true, fit: false });
+    setStatus('路网已补充，正在重新计算路线…', 'live');
+    return true;
+  } catch (error) {
+    const reason = error.name === 'AbortError' ? '请求超时' : error.message || '服务暂不可用';
+    setStatus(`路线区域补充失败 · ${reason}`, 'ready');
+    return false;
+  } finally {
+    networkLoading = false;
+  }
+}
+
+async function loadOsmNetwork({ interactive = true } = {}) {
+  if (networkLoading) return;
+  networkLoading = true;
+  setText('networkStatus', '正在加载服务器武汉 OSM 缓存…');
+  setStatus('正在从服务器读取武汉路网…', 'live');
+  if (window.location.protocol === 'file:') {
+    setText('networkStatus', '请使用本地服务器打开页面');
+    setStatus('当前是 file:// 模式，请双击 start-server.bat 后访问 http://localhost:5173/', 'ready');
+    if (interactive) $('networkFileInput')?.click();
+    networkLoading = false;
+    return;
+  }
+  try {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 10000);
+    try {
+      const payload = await fetchOsmPayload(currentExpansionBbox(), { allowOverpass: false });
+      installNetworkPayload(payload, '服务器武汉 OSM');
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  } catch (localError) {
+    try {
+      const localController = new AbortController();
+      const localTimeout = window.setTimeout(() => localController.abort(), 30000);
+      setText('networkStatus', '正在读取静态武汉 OSM 路网…');
+      setStatus('服务器接口不可用，正在读取项目内完整武汉路网（首次可能较慢）…', 'live');
+      const response = await fetch(STATIC_NETWORK_URL, { cache: 'no-store', signal: localController.signal, headers: { Accept: 'application/json' } });
+      window.clearTimeout(localTimeout);
+      if (!response.ok) throw new Error(`静态路网 HTTP ${response.status}`);
+      installNetworkPayload(await response.json(), '项目内武汉 OSM');
+    } catch (error) {
+      try {
+        const payload = await fetchOsmPayload(currentExpansionBbox());
+        installNetworkPayload(payload, '在线 OSM');
+      } catch (overpassError) {
+        setText('networkStatus', 'OSM 路网未加载 · 可重试');
+        const reason = overpassError.name === 'AbortError' ? '请求超时' : overpassError.message || error.message || localError.message;
+        setStatus(`OSM 数据暂不可用 · ${reason}，请重试或检查网络`, 'ready');
+      }
+    }
+  } finally {
+    networkLoading = false;
+  }
+}
+
+async function extendOsmNetwork() {
+  if (networkLoading) return;
+  if (window.location.protocol === 'file:') {
+    setStatus('扩展路网需要通过本地服务器打开页面，不能直接使用 file:// 请求', 'ready');
+    return;
+  }
+  networkLoading = true;
+  const button = $('extendNetworkBtn');
+  if (button) button.disabled = true;
+  const bbox = currentExpansionBbox();
+  setText('networkStatus', `正在请求当前区域主要道路 · ${bbox}`);
+  setStatus('正在从服务器读取并合并当前地图区域的主要道路…', 'live');
+  try {
+    const payload = await fetchOsmPayload(bbox);
+    installNetworkPayload(payload, '在线扩展 OSM', { preserveEndpoints: Boolean(osmNetwork), fit: false });
+    setText('networkStatus', `已合并当前区域 · ${osmNetwork.roads.length.toLocaleString()} 段道路`);
+    setStatus(`路网已扩展 · 当前共 ${osmNetwork.roads.length.toLocaleString()} 段主要道路`, 'ready');
+  } catch (error) {
     const reason = error.name === 'AbortError' ? '请求超时' : error.message;
-    setStatus(`OSM 数据暂不可用 · ${reason}，请重试或检查网络`, 'ready');
+    setText('networkStatus', '扩展失败 · 可重试');
+    setStatus(`扩展 OSM 路网失败 · ${reason}`, 'ready');
   } finally {
     networkLoading = false;
     if (button) button.disabled = false;
@@ -325,12 +625,13 @@ async function loadOsmNetwork() {
 }
 
 function routeSegmentDistances(ids) {
-  return ids.slice(0, -1).map((id, index) => geographicDistance(point(id), point(ids[index + 1])));
+  return ids.slice(0, -1).map((id, index) => activeRouteEdges[index]?.distance ?? geographicDistance(point(id), point(ids[index + 1])));
 }
 
 function routeDistance(ids) { return routeSegmentDistances(ids).reduce((total, distance) => total + distance, 0); }
 
-function routeSegmentLabel(from, to) {
+function routeSegmentLabel(from, to, edge) {
+  if (edge?.name) return edge.name;
   const roadName = osmNetwork?.roadNames?.get(`${from}>${to}`);
   return roadName || 'OSM 道路';
 }
@@ -422,6 +723,11 @@ function renderableRoads() {
   return roads.map(([from, to, highway, oneWay], index) => ({ from, to, highway, oneWay, index }));
 }
 
+function displayableRoads() {
+  // OSM 路网只用于建图和计算，不作为底图图层绘制；最终路线由 route 图层单独绘制。
+  return [];
+}
+
 function draw() {
   routeMotionToken += 1;
   layers.roads.clearLayers();
@@ -429,9 +735,17 @@ function draw() {
   layers.route.clearLayers();
   layers.routeMotion.clearLayers();
   layers.endpoints.clearLayers();
-  renderableRoads().forEach(({ from: a, to: b, highway, oneWay, index, name }) => {
+  syncNetworkDisplay();
+  displayableRoads().forEach(({ from: a, to: b, highway, oneWay, index, name }) => {
     const isTraffic = !osmNetwork && trafficOn && index === trafficRoadIndex;
-    const line = L.polyline([point(a), point(b)], { color: isTraffic ? '#df7c62' : highway ? '#99b9b8' : '#d0dcda', weight: isTraffic ? 5 : highway ? 4 : 2, opacity: osmNetwork ? .72 : .95, interactive: !osmNetwork }).addTo(layers.roads);
+    const focusRoad = Boolean(osmNetwork && networkContrast);
+    const coreColor = isTraffic ? '#ff765d' : focusRoad ? (highway ? '#8cf2df' : '#d7fff0') : highway ? '#99b9b8' : '#d0dcda';
+    const coreWeight = isTraffic ? 5 : highway ? (focusRoad ? 5 : 4) : (focusRoad ? 3 : 2);
+    const lineOptions = { color: coreColor, weight: coreWeight, opacity: osmNetwork ? (focusRoad ? .98 : .72) : .95, interactive: !osmNetwork, pane: osmNetwork ? 'roadNetworkPane' : undefined, renderer: osmNetwork ? roadRenderer : undefined, lineCap: 'round', lineJoin: 'round' };
+    if (focusRoad) {
+      L.polyline([point(a), point(b)], { ...lineOptions, color: '#18343b', weight: coreWeight + 4, opacity: .92 }).addTo(layers.roads);
+    }
+    const line = L.polyline([point(a), point(b)], lineOptions).addTo(layers.roads);
     if (!osmNetwork || highway || oneWay) line.bindTooltip(isTraffic ? '拥堵路段 · 速度下降' : name || (oneWay ? '单向道 · 仅按箭头方向通行' : '普通道路'), { sticky: true, className: isTraffic ? 'traffic-tooltip' : 'road-tooltip' });
     if (oneWay && !osmNetwork) {
       const angle = directionAngle(point(a), point(b));
@@ -441,7 +755,7 @@ function draw() {
       L.marker(midpoint(point(a), point(b)), { icon: L.divIcon({ className: 'traffic-marker', html: '<span>拥堵</span>', iconSize: [42, 20], iconAnchor: [21, 10] }), interactive: false, title: '拥堵路段' }).addTo(layers.annotations);
     }
   });
-  if (activeRoute.length > 1) {
+  if (activeRoute.length > 1 && activeRouteEdges.length) {
     L.polyline(latLngs(activeRoute), { color: '#7d302d', weight: 13, opacity: .72, lineCap: 'round', lineJoin: 'round' }).addTo(layers.route);
     L.polyline(latLngs(activeRoute), { color: '#e45f4d', weight: 8, opacity: .98, lineCap: 'round', lineJoin: 'round' }).addTo(layers.route);
     L.polyline(latLngs(activeRoute), { color: '#ffd0a5', weight: 3, opacity: .95, dashArray: '12 10', lineCap: 'round', lineJoin: 'round' }).addTo(layers.route);
@@ -593,7 +907,7 @@ async function loadRegion() {
 function setEndpointFromLatLng(kind, latlng) {
   const closest = snapEndpointToNode(kind, [latlng.lat, latlng.lng]);
   if (!closest) {
-    setStatus('请先加载 OSM 路网，再拖动起点或终点');
+    setStatus('该位置附近没有可用的主要道路，请选择靠近道路的位置');
     return null;
   }
   if (kind === 'start') startKey = closest; else endKey = closest;
@@ -628,9 +942,11 @@ function routeTouchesAvoidArea(ids) {
   });
 }
 
-function moveEndpoint(kind, latlng) {
+async function moveEndpoint(kind, latlng) {
+  if (!await ensureOsmCoverage(latlng)) return;
   if (!setEndpointFromLatLng(kind, latlng)) return;
   activeRoute = buildRouteWithEndpoints(activeRoute);
+  activeRouteEdges = [];
   cancelAnimations(); draw(); updateMetrics(false); setStatus('已更新端点，可重新规划');
 }
 
@@ -660,11 +976,13 @@ function syncNodeInput(kind) {
   input.setCustomValidity('');
   if (kind === 'start') startKey = key; else endKey = key;
   activeRoute = buildRouteWithEndpoints(activeRoute);
+  activeRouteEdges = [];
   cancelAnimations(); draw(); updateMetrics(false); updateNavStopSummary(); setStatus(`已更新${kind === 'start' ? '起点' : '终点'} ${nodeLabel(key)}，可重新规划`);
 }
 
 function selectRouteFromSettings() {
   activeRoute = [];
+  activeRouteEdges = [];
   layers.search.clearLayers();
   layers.searchEdges.clearLayers();
   layers.searchFrontier.clearLayers();
@@ -695,21 +1013,147 @@ function applySkin(skin, announce = true) {
 
 function updateMetrics(done = true) {
   const distance = routeDistance(activeRoute);
-  const speedByMode = { '最快': 42, '最短': 38, '省油': 34, '少红绿灯': 40, '风景': 32 };
-  const trafficDelay = trafficOn ? .7 : 0;
-  const estimatedMinutes = distance / 1000 / speedByMode[$('routeMode').value] * 60 + trafficDelay;
   const segmentDistances = routeSegmentDistances(activeRoute);
   setText('distanceMetric', (distance / 1000).toFixed(2));
-  setText('timeMetric', estimatedMinutes.toFixed(1));
   setText('expandedMetric', done ? String(lastSearchStats.expanded || Math.max(0, activeRoute.length)) : '—');
   setText('queryMetric', done ? (lastSearchStats.elapsed ? lastSearchStats.elapsed.toFixed(1) : '—') : '—');
   setText('strategyLabel', `${$('algorithm').value} · ${$('routeMode').value}`);
   setText('segmentCount', `${Math.max(0, activeRoute.length - 1)} 段`);
-  $('segmentList').innerHTML = activeRoute.slice(0, -1).map((id, i) => `<li>${escapeHtml(routeSegmentLabel(id, activeRoute[i + 1]))} <span style="margin-left:auto;color:#9aa8a8">${Math.round(segmentDistances[i])} m</span></li>`).join('');
+  $('segmentList').innerHTML = activeRoute.slice(0, -1).map((id, i) => `<li>${escapeHtml(routeSegmentLabel(id, activeRoute[i + 1], activeRouteEdges[i]))} <span style="margin-left:auto;color:#9aa8a8">${Math.round(segmentDistances[i])} m</span></li>`).join('');
+}
+
+function renderRouteComparison(item = activeRouteHistoryItem) {
+  const section = $('comparisonSection');
+  const list = $('comparisonList');
+  if (!section || !list) return;
+  const runs = Array.isArray(item?.comparisons) ? item.comparisons : [];
+  section.hidden = runs.length === 0;
+  setText('comparisonCount', `${runs.length} 次`);
+  if (!runs.length) {
+    list.innerHTML = '';
+    return;
+  }
+  const elapsedValues = runs.map((run) => Number(run.elapsed)).filter(Number.isFinite);
+  const expandedValues = runs.map((run) => Number(run.expanded)).filter(Number.isFinite);
+  const bestElapsed = elapsedValues.length ? Math.min(...elapsedValues) : Infinity;
+  const bestExpanded = expandedValues.length ? Math.min(...expandedValues) : Infinity;
+  list.innerHTML = runs.map((run, index) => {
+    const elapsed = Number(run.elapsed);
+    const expanded = Number(run.expanded);
+    const badges = [
+      elapsed === bestElapsed ? '最快' : '',
+      expanded === bestExpanded ? '少扩展' : ''
+    ].filter(Boolean).join(' · ');
+    return `
+      <div class="comparison-row${badges ? ' is-best' : ''}">
+        <span class="comparison-run-index">${String(index + 1).padStart(2, '0')}</span>
+        <div class="comparison-run-main">
+          <strong>${escapeHtml(run.algorithm || '未知算法')}</strong>
+          <small>${escapeHtml(run.mode || '默认目标')} · ${Number(run.distanceKm || 0).toFixed(2)} km${badges ? ` · ${badges}` : ''}</small>
+        </div>
+        <div class="comparison-run-metrics">
+          <span><b>${Number.isFinite(expanded) ? expanded.toLocaleString() : '—'}</b><small>nodes</small></span>
+          <span><b>${Number.isFinite(elapsed) ? elapsed.toFixed(1) : '—'}</b><small>ms</small></span>
+        </div>
+      </div>`;
+  }).join('');
+  setText('comparisonHint', runs.length < 2 ? '再次规划同一起终点，可对比不同算法的搜索表现。' : '数值越小表示本次搜索开销越低。');
+}
+
+function renderRouteHistory() {
+  const anchor = $('routeHistoryAnchor');
+  const list = $('routeHistoryList');
+  if (!anchor || !list) return;
+  const shouldShow = routeHistory.length > 0 && (!navigationPanelOpen || routeSummaryCollapsed);
+  anchor.hidden = !shouldShow;
+  setText('routeHistoryCount', String(routeHistory.length));
+  list.innerHTML = routeHistory.map((item, index) => `
+    <button class="route-history-item" type="button" data-history-index="${index}">
+      <span class="route-history-index">${String(item.sequence || index + 1).padStart(2, '0')}</span>
+      <span class="route-history-pair"><span>${escapeHtml(item.startLabel)}</span><b>→</b><span>${escapeHtml(item.endLabel)}</span></span>
+      <small>${item.distanceKm.toFixed(2)} km · 点击查看路线设置</small>
+    </button>
+  `).join('');
+}
+
+function setPlanKicker(sequence = 1) {
+  setText('planKicker', `${String(sequence).padStart(2, '0')} / PLAN`);
+}
+
+function setRouteSummaryCollapsed(collapsed) {
+  routeSummaryCollapsed = collapsed;
+  document.querySelector('.workspace')?.classList.toggle('route-summary-collapsed', collapsed);
+  if (collapsed && $('routeHistoryDetails')) $('routeHistoryDetails').open = false;
+  renderRouteHistory();
+  window.setTimeout(refreshMapSize, 180);
+}
+
+function rememberRouteHistory() {
+  if (!startKey || !endKey || activeRoute.length < 2) return;
+  const existingIndex = routeHistory.findIndex((item) => item.startKey === startKey && item.endKey === endKey);
+  const previousItem = existingIndex >= 0 ? routeHistory[existingIndex] : null;
+  const sequence = ++routeSequence;
+  const run = {
+    sequence,
+    algorithm: $('algorithm').value,
+    mode: $('routeMode').value,
+    path: [...activeRoute],
+    edgePath: activeRouteEdges.map((edge) => ({ ...edge })),
+    expanded: lastSearchStats.expanded,
+    elapsed: lastSearchStats.elapsed,
+    distanceKm: routeDistance(activeRoute) / 1000
+  };
+  const item = {
+    startKey,
+    endKey,
+    startLabel: nodeLabel(startKey),
+    endLabel: nodeLabel(endKey),
+    ...run,
+    comparisons: [...(previousItem?.comparisons || []), run].slice(-12)
+  };
+  if (existingIndex >= 0) routeHistory.splice(existingIndex, 1);
+  routeHistory.unshift(item);
+  routeHistory = routeHistory.slice(0, ROUTE_HISTORY_LIMIT);
+  activeRouteHistoryItem = item;
+  setPlanKicker(sequence);
+  renderRouteComparison(item);
+  renderRouteHistory();
+}
+
+function restoreRouteHistory(index) {
+  const item = routeHistory[index];
+  if (!item || !item.path.every((key) => point(key))) {
+    setStatus('历史路线所需的路网区域尚未加载，请先回到对应地图区域');
+    return;
+  }
+  startKey = item.startKey;
+  endKey = item.endKey;
+  clickSelectStart = false;
+  activeRouteHistoryItem = item;
+  setPlanKicker(item.sequence || index + 1);
+  activeRoute = [...item.path];
+  activeRouteEdges = item.edgePath.map((edge) => ({ ...edge }));
+  lastSearchStats = { expanded: item.expanded, elapsed: item.elapsed };
+  if ($('algorithm')) $('algorithm').value = item.algorithm;
+  if ($('routeMode')) $('routeMode').value = item.mode;
+  setFieldValue('startNode', `${formatNodeId(startKey)} · 已吸附道路节点`);
+  setFieldValue('endNode', `${formatNodeId(endKey)} · 已吸附道路节点`);
+  updateNavStopSummary();
+  renderRouteComparison(item);
+  $('routeHistoryDetails').open = false;
+  setNavigationPanelOpen(true);
+  document.querySelector('.workspace')?.classList.add('route-planned');
+  setRouteSummaryCollapsed(false);
+  draw();
+  updateMetrics(true);
+  setStatus('已打开历史路线', 'ready');
 }
 
 function cancelAnimations() { animationToken += 1; busy = false; if (vehicleMarker) { layers.vehicle.clearLayers(); vehicleMarker = null; } }
-function setButtons(disabled) { ['planBtn','contractionBtn','driveBtn','trafficBtn','regionBtn','loadNetworkBtn'].forEach(id => $(id).disabled = disabled); }
+function setButtons(disabled) {
+  ['planBtn', 'contractionBtn', 'driveBtn', 'trafficBtn', 'regionBtn', 'algorithm', 'routeMode', 'avoidHighway', 'avoidTraffic', 'preferScenic', 'preferCharging']
+    .forEach((id) => { const control = $(id); if (control) control.disabled = disabled; });
+}
 
 function edgeInsideAvoidArea(a, b) {
   if (routeTouchesAvoidArea([a, b])) return true;
@@ -723,13 +1167,13 @@ function buildGraph() {
   const addEdge = (from, to, edge) => graph.get(from)?.push({ to, ...edge });
   if (osmNetwork) {
     osmNetwork.roads.forEach((road, roadIndex) => {
-      const edge = { distance: road.distance, highway: road.highway, roadIndex };
+      const edge = { distance: road.distance, highway: road.highway, roadIndex, edgeId: road.edgeId || `road:${roadIndex}`, name: road.name || 'OSM 道路' };
       addEdge(road.from, road.to, edge);
       if (!road.oneWay) addEdge(road.to, road.from, edge);
     });
   } else {
     roads.forEach(([from, to, highway, oneWay], roadIndex) => {
-      const edge = { distance: geographicDistance(point(from), point(to)), highway, roadIndex };
+      const edge = { distance: geographicDistance(point(from), point(to)), highway, roadIndex, edgeId: `road:${roadIndex}`, name: '道路' };
       addEdge(from, to, edge);
       if (!oneWay) addEdge(to, from, edge);
     });
@@ -759,6 +1203,16 @@ function searchEdgeCost(from, to, edge) {
 }
 
 function estimateHeuristicScale(graph) {
+  const signature = JSON.stringify({
+    algorithm: $('algorithm')?.value,
+    mode: $('routeMode')?.value,
+    avoidHighway: Boolean($('avoidHighway')?.checked),
+    avoidTraffic: Boolean($('avoidTraffic')?.checked),
+    trafficOn,
+    avoidAreas: avoidAreaLayers.size,
+    nodeTags: [...nodeTags.entries()]
+  });
+  if (heuristicCacheNetwork === osmNetwork && heuristicCacheSignature === signature) return heuristicCacheScale;
   let scale = Infinity;
   graph.forEach((edges, from) => {
     edges.forEach((edge) => {
@@ -767,7 +1221,10 @@ function estimateHeuristicScale(graph) {
       if (Number.isFinite(cost) && geometricDistance > 0) scale = Math.min(scale, cost / geometricDistance);
     });
   });
-  return Number.isFinite(scale) ? Math.max(0, scale * (1 - 1e-12)) : 0;
+  heuristicCacheNetwork = osmNetwork;
+  heuristicCacheSignature = signature;
+  heuristicCacheScale = Number.isFinite(scale) ? Math.max(0, scale * (1 - 1e-12)) : 0;
+  return heuristicCacheScale;
 }
 
 function heuristicCost(from, to, scale) {
@@ -775,90 +1232,151 @@ function heuristicCost(from, to, scale) {
   return geographicDistance(point(from), point(to)) * scale;
 }
 
-function makeSearchTrace(start, target) {
+class MinPriorityQueue {
+  constructor() { this.items = []; this.sequence = 0; }
+
+  get size() { return this.items.length; }
+
+  push(item) {
+    // 同优先级时使用递增序号，避免不同浏览器对相同 f/g 值产生不稳定的展开顺序。
+    const entry = { ...item, sequence: this.sequence++ };
+    this.items.push(entry);
+    let index = this.items.length - 1;
+    while (index > 0) {
+      const parent = Math.floor((index - 1) / 2);
+      if (!this.isBefore(entry, this.items[parent])) break;
+      this.items[index] = this.items[parent];
+      index = parent;
+    }
+    this.items[index] = entry;
+  }
+
+  pop() {
+    if (!this.items.length) return null;
+    const first = this.items[0];
+    const last = this.items.pop();
+    if (this.items.length && last) {
+      let index = 0;
+      while (true) {
+        const left = index * 2 + 1;
+        const right = left + 1;
+        let smallest = index;
+        if (left < this.items.length && this.isBefore(this.items[left], last)) smallest = left;
+        if (right < this.items.length && this.isBefore(this.items[right], smallest === index ? last : this.items[smallest])) smallest = right;
+        if (smallest === index) break;
+        this.items[index] = this.items[smallest];
+        index = smallest;
+      }
+      this.items[index] = last;
+    }
+    return first;
+  }
+
+  isBefore(left, right) {
+    return left.f < right.f
+      || (left.f === right.f && (left.g < right.g || (left.g === right.g && left.sequence < right.sequence)));
+  }
+}
+
+function makeSearchTrace(start, target, heuristicScale) {
   const graph = buildGraph();
   if (!start || !target || !graph.has(start) || !graph.has(target)) return { path: [], snapshots: [], expanded: 0 };
-  // 与 Python 参考实现一致：把球面直线距离乘以全图安全比例，确保 A* 启发值不高估道路代价。
-  const heuristicScale = estimateHeuristicScale(graph);
-  const open = [{ key: start, g: 0, f: heuristicCost(start, target, heuristicScale) }];
+  const open = new MinPriorityQueue();
+  open.push({ key: start, g: 0, f: heuristicCost(start, target, heuristicScale) });
   const gScore = new Map([[start, 0]]);
   const cameFrom = new Map();
   const expanded = new Set();
   const expandedCost = new Map();
-  const discoveredEdges = new Map();
   const snapshots = [];
   const maxExpanded = osmNetwork ? 15000 : Infinity;
+  const snapshotStride = osmNetwork ? 4 : 1;
+  let pendingExpanded = [];
+  let queuePushes = 1;
+  let bestGoalCost = Infinity;
 
-  while (open.length && expanded.size < maxExpanded) {
-    open.sort((left, right) => left.f - right.f || left.g - right.g);
-    const current = open.shift();
+  while (open.size && expanded.size < maxExpanded) {
+    const current = open.pop();
     if (!current || current.g !== gScore.get(current.key)) continue;
     if (expandedCost.has(current.key) && current.g >= expandedCost.get(current.key)) continue;
+    // 只有队列中最优候选也无法改进当前终点代价时才结束，避免启发式边界情况下过早停止。
+    if (Number.isFinite(bestGoalCost) && current.f > bestGoalCost + 1e-9) break;
     expanded.add(current.key);
     expandedCost.set(current.key, current.g);
-    const candidates = graph.get(current.key) || [];
-    candidates.forEach((edge) => {
-      const { to } = edge;
-      const cost = searchEdgeCost(current.key, to, edge);
-      if (!Number.isFinite(cost)) return;
-      discoveredEdges.set(`${current.key}>${to}`, { from: current.key, to });
-      if (expanded.has(to)) return;
-      const nextG = current.g + cost;
-      if (nextG < (gScore.get(to) ?? Infinity)) {
-        gScore.set(to, nextG);
-        cameFrom.set(to, current.key);
-        open.push({ key: to, g: nextG, f: nextG + heuristicCost(to, target, heuristicScale) });
-      }
-    });
-    const frontier = [...new Set(open.map((entry) => entry.key))].filter((key) => !expanded.has(key));
-    snapshots.push({ current: current.key, expanded: [...expanded], frontier, edges: [...discoveredEdges.values()] });
-    if (current.key === target) break;
+    pendingExpanded.push(current.key);
+    if (current.key === target) {
+      bestGoalCost = Math.min(bestGoalCost, current.g);
+    }
+    if (current.key !== target) {
+      const candidates = graph.get(current.key) || [];
+      candidates.forEach((edge) => {
+        const { to } = edge;
+        const cost = searchEdgeCost(current.key, to, edge);
+        if (!Number.isFinite(cost)) return;
+        if (expanded.has(to)) return;
+        const nextG = current.g + cost;
+        if (nextG < (gScore.get(to) ?? Infinity)) {
+          gScore.set(to, nextG);
+          cameFrom.set(to, { from: current.key, edge });
+          open.push({ key: to, g: nextG, f: nextG + heuristicCost(to, target, heuristicScale) });
+          queuePushes += 1;
+        }
+      });
+    }
+    const shouldSnapshot = expanded.size % snapshotStride === 0 || current.key === target;
+    if (shouldSnapshot) {
+      const frontierKeys = [...new Set(open.items.map((entry) => entry.key))].filter((key) => !expanded.has(key));
+      snapshots.push({ current: current.key, expandedDelta: pendingExpanded, frontier: frontierKeys.slice(0, 180), frontierCount: frontierKeys.length });
+      pendingExpanded = [];
+    }
+  }
+
+  if (pendingExpanded.length) {
+    const last = snapshots[snapshots.length - 1];
+    snapshots.push({ current: pendingExpanded[pendingExpanded.length - 1], expandedDelta: pendingExpanded, frontier: last?.frontier || [], frontierCount: last?.frontierCount || 0 });
   }
 
   const path = [];
+  const edgePath = [];
   if (expanded.has(target)) {
     let cursor = target;
     while (cursor) {
       path.unshift(cursor);
-      cursor = cameFrom.get(cursor);
+      const previous = cameFrom.get(cursor);
+      if (!previous) break;
+      edgePath.unshift(previous.edge);
+      cursor = previous.from;
     }
   }
-  return { path, snapshots, expanded: expanded.size };
+  return { path, edgePath, snapshots, expanded: expanded.size, queuePushes };
 }
 
 function buildSearchPlan() {
   const stops = [startKey, ...navWaypointKeys, endKey];
   let path = [];
+  let edgePath = [];
   let expanded = 0;
-  let previousEdges = [];
-  let previousExpanded = [];
+  let queuePushes = 0;
   const snapshots = [];
+  const graph = buildGraph();
+  const heuristicScale = estimateHeuristicScale(graph);
   for (let index = 0; index < stops.length - 1; index += 1) {
-    const trace = makeSearchTrace(stops[index], stops[index + 1]);
+    const trace = makeSearchTrace(stops[index], stops[index + 1], heuristicScale);
     if (!trace.path.length) return { path: [], snapshots, expanded };
     path = path.concat(index === 0 ? trace.path : trace.path.slice(1));
+    edgePath = edgePath.concat(trace.edgePath || []);
     expanded += trace.expanded;
-    trace.snapshots.forEach((snapshot) => {
-      const mergedEdges = [...previousEdges, ...snapshot.edges];
-      const mergedExpanded = [...new Set([...previousExpanded, ...snapshot.expanded])];
-      snapshots.push({ ...snapshot, edges: mergedEdges, expanded: mergedExpanded });
-    });
-    previousEdges = [...previousEdges, ...trace.snapshots.at(-1).edges];
-    previousExpanded = [...new Set([...previousExpanded, ...trace.snapshots.at(-1).expanded])];
+    queuePushes += trace.queuePushes || 0;
+    snapshots.push(...trace.snapshots);
   }
-  return { path: [...new Set(path)], snapshots, expanded };
+  return { path, edgePath, snapshots, expanded, queuePushes };
 }
 
-function renderSearchSnapshot(snapshot) {
+function renderSearchSnapshot(snapshot, displayState) {
   layers.search.clearLayers();
   layers.searchEdges.clearLayers();
   layers.searchFrontier.clearLayers();
-  const visibleEdges = snapshot.edges.slice(-850);
-  const visibleExpanded = snapshot.expanded.slice(-650);
+  const visibleExpanded = [...displayState.expanded].slice(-650);
   const visibleFrontier = snapshot.frontier.slice(0, 240);
-  visibleEdges.forEach(({ from, to }) => {
-    L.polyline([point(from), point(to)], { color: '#bb8ac7', weight: 3, opacity: .8, dashArray: '5 6', interactive: false }).addTo(layers.searchEdges);
-  });
   visibleExpanded.forEach((key) => {
     L.marker(point(key), { icon: L.divIcon({ className: 'search-point', iconSize: [9, 9], iconAnchor: [4.5, 4.5] }), interactive: false }).addTo(layers.search);
   });
@@ -868,12 +1386,12 @@ function renderSearchSnapshot(snapshot) {
   if (snapshot.current) {
     L.marker(point(snapshot.current), { icon: L.divIcon({ className: 'frontier-current', html: '<span>◆</span>', iconSize: [18, 18], iconAnchor: [9, 9] }), interactive: false }).addTo(layers.searchFrontier);
   }
-  setText('routeHint', `已扩展 ${snapshot.expanded.length} 个节点 · 边界 ${snapshot.frontier.length} 个节点`);
+  setText('routeHint', `已遍历 ${displayState.expandedTotal} 个折点 · 边界 ${snapshot.frontierCount ?? snapshot.frontier.length} 个折点`);
 }
 
 async function replay() {
   if (!osmNetwork) {
-    setStatus('OSM 路网尚未加载 · 请先加载真实路网');
+    setStatus('路网数据正在准备 · 请稍候再规划', 'live');
     return;
   }
   if (!startKey || !endKey) {
@@ -886,7 +1404,11 @@ async function replay() {
   }
   cancelAnimations(); busy = true; setButtons(true); setStatus('正在展开搜索边界…', 'live');
   const searchStartedAt = performance.now();
-  const plan = buildSearchPlan();
+  let plan = buildSearchPlan();
+  // 两个端点可能分别来自两个局部缓存，先补充它们之间的道路再重算。
+  if (!plan.path.length && !$('avoidHighway')?.checked && avoidAreaLayers.size === 0) {
+    if (await ensureRouteCoverage()) plan = buildSearchPlan();
+  }
   const searchElapsed = performance.now() - searchStartedAt;
   const token = animationToken;
   if (!plan.path.length) {
@@ -894,12 +1416,20 @@ async function replay() {
     return;
   }
   const snapshotStep = Math.max(1, Math.ceil(plan.snapshots.length / 42));
-  const snapshots = plan.snapshots.filter((snapshot, index) => index % snapshotStep === 0 || index === plan.snapshots.length - 1);
   const frameDelay = plan.snapshots.length > 1800 ? 42 : 58;
-  for (let index = 0; index < snapshots.length; index += 1) {
+  const displayState = { expanded: new Set(), expandedTotal: 0 };
+  let frameIndex = 0;
+  for (let index = 0; index < plan.snapshots.length; index += 1) {
     if (token !== animationToken) return;
-    renderSearchSnapshot(snapshots[index]);
-    const progress = Math.round((index + 1) / snapshots.length * 100);
+    const snapshot = plan.snapshots[index];
+    snapshot.expandedDelta?.forEach((key) => displayState.expanded.add(key));
+    displayState.expandedTotal += snapshot.expandedDelta?.length || 0;
+    if (displayState.expanded.size > 900) displayState.expanded = new Set([...displayState.expanded].slice(-900));
+    if (index % snapshotStep !== 0 && index !== plan.snapshots.length - 1) continue;
+    renderSearchSnapshot(snapshot, displayState);
+    frameIndex += 1;
+    const totalFrames = Math.ceil(plan.snapshots.length / snapshotStep);
+    const progress = Math.round(frameIndex / totalFrames * 100);
     setText('progressValue', `${progress}%`);
     $('routeProgress').style.width = `${progress}%`;
     await delay(frameDelay);
@@ -908,17 +1438,20 @@ async function replay() {
   await delay(220);
   layers.search.clearLayers(); layers.searchEdges.clearLayers(); layers.searchFrontier.clearLayers();
   activeRoute = plan.path;
-  lastSearchStats = { expanded: plan.expanded, elapsed: searchElapsed };
+  activeRouteEdges = plan.edgePath || [];
+  lastSearchStats = { expanded: plan.expanded, queuePushes: plan.queuePushes, elapsed: searchElapsed };
   document.querySelector('.workspace')?.classList.add('route-planned');
+  rememberRouteHistory();
+  setRouteSummaryCollapsed(false);
   draw(); updateMetrics(true); busy = false; setButtons(false); setStatus(`规划完成 · 已扩展 ${plan.expanded} 个道路节点`, 'ready');
 }
 
 async function runPlan() {
   if (!osmNetwork) {
-    setStatus('OSM 路网尚未加载 · 请先加载武汉 OSM 路网');
+    setStatus('路网数据正在准备 · 请稍候再规划', 'live');
     return;
   }
-  cancelAnimations(); layers.contractions.clearLayers(); layers.search.clearLayers(); layers.searchEdges.clearLayers(); layers.searchFrontier.clearLayers(); activeRoute = []; draw(); updateMetrics(false); setText('routeHint', '搜索中，正在展开候选节点'); setText('progressValue', '0%'); $('routeProgress').style.width = '0%';
+  cancelAnimations(); layers.contractions.clearLayers(); layers.search.clearLayers(); layers.searchEdges.clearLayers(); layers.searchFrontier.clearLayers(); activeRoute = []; activeRouteEdges = []; draw(); updateMetrics(false); setText('routeHint', `${$('algorithm').value} 搜索中，正在展开候选节点`); setText('progressValue', '0%'); $('routeProgress').style.width = '0%';
   await replay();
   if (!busy && activeRoute.length) setText('routeHint', `${$('algorithm').value} 搜索轨迹已完成`);
 }
@@ -1313,23 +1846,49 @@ function setPanelCollapsed(side, collapsed) {
   window.setTimeout(refreshMapSize, 180);
 }
 
-map.on('click', (event) => {
+function setNavigationPanelOpen(open) {
+  const workspace = document.querySelector('.workspace');
+  if (!workspace) return;
+  navigationPanelOpen = open;
+  workspace.classList.toggle('menu-open', open);
+  if (!open && $('routeHistoryDetails')) $('routeHistoryDetails').open = false;
+  renderRouteHistory();
+  window.setTimeout(refreshMapSize, 180);
+}
+
+map.on('click', async (event) => {
   if (busy) return;
   if (activeSidebarPage === 'drawing') {
     handleDrawingClick(event);
     return;
   }
-  if (!osmNetwork) {
-    setStatus('请先打开右上角菜单并加载 OSM 路网');
-    return;
+  // 先打开导航面板，再准备路网；这样路网请求较慢或失败时，用户仍能看到起终点设置入口。
+  setNavigationPanelOpen(true);
+  try {
+    if (networkLoading) {
+      setStatus('路网数据正在自动准备，已记录本次选点…', 'live');
+      while (networkLoading) await delay(80);
+    }
+    if (!await ensureOsmCoverage(event.latlng)) return;
+    const kind = clickSelectStart ? 'start' : 'end';
+    if (kind === 'start') {
+      activeRouteHistoryItem = null;
+      renderRouteComparison(null);
+      setPlanKicker(routeSequence + 1);
+    }
+    const closest = setEndpointFromLatLng(kind, event.latlng);
+    if (!closest) return;
+    setStatus(kind === 'start' ? '起点已吸附到最近道路节点 · 请继续点击终点' : '终点已吸附到最近道路节点 · 可以开始规划', 'ready');
+    clickSelectStart = !clickSelectStart; activeRoute = buildRouteWithEndpoints(activeRoute); activeRouteEdges = []; draw();
+    updateNavStopSummary();
+  } catch (error) {
+    console.error('地图选点失败', error);
+    setStatus(`选点失败 · ${error.message || '请稍后重试'}`, 'ready');
   }
-  const kind = clickSelectStart ? 'start' : 'end';
-  const closest = setEndpointFromLatLng(kind, event.latlng);
-  if (!closest) return;
-  setStatus(kind === 'start' ? '起点已吸附到最近道路节点 · 请继续点击终点' : '终点已吸附到最近道路节点 · 可以开始规划', 'ready');
-  clickSelectStart = !clickSelectStart; activeRoute = buildRouteWithEndpoints(activeRoute); draw();
-  updateNavStopSummary();
 });
+
+// 浏览地图进入新区域时自动预取道路，选点时不再临时等待整块数据。
+map.on('moveend', scheduleViewportCoverage);
 
 map.on('dblclick', () => {
   if (activeSidebarPage === 'drawing' && (drawingMode === 'polyline' || drawingMode === 'polygon')) finishDrawing();
@@ -1376,18 +1935,17 @@ $('contractionBtn').addEventListener('click', contractions);
 $('driveBtn').addEventListener('click', drive);
 $('trafficBtn').addEventListener('click', toggleTraffic);
 $('regionBtn').addEventListener('click', loadRegion);
-$('loadNetworkBtn').addEventListener('click', loadOsmNetwork);
 $('basemapSelect').addEventListener('change', (event) => setBasemap(event.target.value));
 $('skinSelect').addEventListener('change', (event) => applySkin(event.target.value));
 $('routeMode').addEventListener('change', () => { if (!busy) { selectRouteFromSettings(); setStatus(`已切换路线目标 · ${$('routeMode').value}`, 'ready'); } });
 $('fitBtn').addEventListener('click', () => { if (activeRoute.length > 1) map.fitBounds(L.latLngBounds(latLngs(activeRoute)), { padding: [75, 75], animate: true }); });
 $('poiSearchBtn').addEventListener('click', runPoiSearch);
 $('poiSearchInput').addEventListener('keydown', (event) => { if (event.key === 'Enter') runPoiSearch(); });
-$('menuBtn').addEventListener('click', () => {
-  const workspace = document.querySelector('.workspace');
-  const open = !workspace.classList.contains('menu-open');
-  workspace.classList.toggle('menu-open', open);
-  $('menuBtn').setAttribute('aria-expanded', String(open));
+$('panelCloseBtn').addEventListener('click', () => setNavigationPanelOpen(false));
+$('insightCloseBtn').addEventListener('click', () => setRouteSummaryCollapsed(true));
+$('routeHistoryList').addEventListener('click', (event) => {
+  const item = event.target.closest('[data-history-index]');
+  if (item) restoreRouteHistory(Number(item.dataset.historyIndex));
 });
 $('leftPanelToggle').addEventListener('click', () => setPanelCollapsed('left', !leftPanelCollapsed));
 $('rightPanelToggle').addEventListener('click', () => setPanelCollapsed('right', !rightPanelCollapsed));
@@ -1401,6 +1959,11 @@ $('drawColor').addEventListener('input', renderDrawingDraft);
 $('nodeManageSelect').addEventListener('change', updateNodeManagementControls);
 $('scenicNodeBtn').addEventListener('click', () => toggleNodeTag('scenic'));
 $('chargingNodeBtn').addEventListener('click', () => toggleNodeTag('charging'));
+$('networkContrast').addEventListener('change', (event) => {
+  networkContrast = event.target.checked;
+  draw();
+  setStatus(networkContrast ? '已启用底图压暗' : '已关闭底图压暗', 'ready');
+});
 ['preferScenic', 'preferCharging'].forEach((id) => {
   const control = $(id);
   if (!control) return;
@@ -1415,7 +1978,9 @@ $('chargingNodeBtn').addEventListener('click', () => toggleNodeTag('charging'));
 let initialSkin = 'flower';
 try { initialSkin = window.localStorage.getItem('g4-navigation-skin') || 'flower'; } catch (error) { /* storage may be disabled */ }
 applySkin(initialSkin, false);
+renderRouteHistory();
 renderNodeManagement();
-  draw(); updateMetrics(false); setStatus('打开右上角菜单选择路网');
-setText('routeHint', '点击“规划并回放搜索”开始');
+draw(); updateMetrics(false); setStatus('路网准备中 · 可直接在地图上选择起终点', 'live');
+setText('routeHint', '点击地图选择起点和终点');
+window.setTimeout(() => { loadOsmNetwork({ interactive: false }); }, 180);
   window.setTimeout(() => { refreshMapSize(); }, 120);

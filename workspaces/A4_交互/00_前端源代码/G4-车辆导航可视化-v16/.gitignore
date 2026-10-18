@@ -1,0 +1,20 @@
+# Local/editor files
+.vscode/
+.idea/
+*.log
+*.tmp
+Thumbs.db
+.DS_Store
+
+# Local development dependencies and generated output
+node_modules/
+dist/
+build/
+
+# The original regional cache remains as a fallback. The generated full-city
+# server extract can be checked in when its size is reviewed by the team.
+# data/server/wuhan-main-roads.json
+
+# Local personal work areas
+workspaces-local/
+个人工作区/

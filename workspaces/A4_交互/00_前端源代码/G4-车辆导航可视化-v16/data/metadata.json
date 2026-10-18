@@ -1,7 +1,7 @@
 {
   "status": "downloaded",
-  "source": "OpenStreetMap official map API",
-  "bbox": "30.496,114.396,30.516,114.416",
+  "source": "OpenStreetMap PBF extract",
+  "bbox": "29.93,113.63,30.93,115.12",
   "highway_types": [
     "motorway",
     "motorway_link",
@@ -16,5 +16,5 @@
   ],
   "license": "ODbL 1.0",
   "attribution": "© OpenStreetMap contributors",
-  "note": "Small central-Wuhan extract for course demonstration; refresh with tools/download_osm_network.py when needed."
+  "note": "Server-side Wuhan major-road cache. The browser requests regional subsets through server.py."
 }

@@ -2,15 +2,22 @@
 
 使用方式：
 1. 解压整个压缩包，并保持 index.html、app.js、styles.css 与 assets 文件夹的相对位置不变。
-2. Windows 用户可双击 start-server.bat 启动网页。
-3. 也可以在该文件夹内启动本地服务器：
-   python -m http.server 5173
-4. 浏览器打开：http://localhost:5173/
+2. Windows 用户直接双击 start-server.bat，脚本会自动启动网页服务。
+3. 浏览器打开：http://localhost:5173/
+4. 如果需要手动启动，在该文件夹内运行：py server.py
 
 注意：
-- 页面优先读取 data/wuhan-main-roads.json；没有本地路网时才请求 Overpass API。
+- 页面从 server.py 的 `/api/network` 读取已经保存的武汉服务器路网；正常启动不会使用光谷小范围缓存。
+- 页面打开后会自动读取项目内的小范围武汉路网。拖动地图进入缓存范围外的新区域时，页面会自动向 OSM 服务请求当前区域的主要道路并合并；点击或规划时也会自动补充，不需要手动管理路网。
+- 扩展前建议先把地图移动或缩放到需要导航的武汉区域；单次请求范围会自动限制，避免请求过大。
+- 请使用 start-server.bat 或本地服务器打开页面。直接双击 index.html 的 file:// 模式无法自动读取缓存，也无法自动请求超出缓存范围的道路。
+- 用户无需先加载或扩展路网：页面会自动准备数据，直接在地图上点击起点和终点即可。完整路网保留给算法计算，地图不绘制普通路网；搜索时只显示遍历折点、边界折点和当前折点，规划完成后只显示最终路线。
 - 页面底图使用 Leaflet 与在线地图瓦片，区域搜索和在线路网回退需要联网。
-- 如需生成本地 OSM 小数据集，请运行：python tools/download_osm_network.py
+- 生成武汉服务器路网：准备湖北或武汉的 .osm.pbf 文件后运行：py tools/build_wuhan_network.py --pbf E:\G4-A4数据\hubei-latest.osm.pbf
+- 查看服务器数据状态：http://localhost:5173/api/health
 - OSM 数据来源为 OpenStreetMap，重新分发时请保留 ODbL 许可与版权署名。
-- 不需要安装或运行原始 Tkinter/Python 算法原型 app.py。
+- 网页端算法直接运行在浏览器中，不需要安装或运行 Tkinter/Python 算法原型。
+- 上传到 GitHub 时请上传解压后的完整项目结构，不要只上传 zip。必须包含 data/server/wuhan-main-roads.json，其他开发者克隆后双击 start-server.bat 即可按本机方式演示。
+- 如果启用 GitHub Pages，页面没有 Python 服务，会自动读取项目内的完整武汉路网 JSON；首次加载较慢属于正常现象。GitHub 网页上传单文件上限为 25 MB，完整路网文件约 35 MB，请使用 Git push 或 GitHub Desktop 上传。
+- tools/astar_haversine.py 是与网页 A* 对齐的 Python 参考实现，供算法对照学习，不是网页启动依赖。
 - assets 文件夹中的图片用于四套皮肤，请不要单独移动或删除。

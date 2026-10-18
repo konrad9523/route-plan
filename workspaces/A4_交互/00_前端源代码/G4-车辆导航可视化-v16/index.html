@@ -6,7 +6,7 @@
   <title>G4 / 车辆导航实验室</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=28">
+  <link rel="stylesheet" href="styles.css?v=34">
 </head>
 <body>
   <main class="app-shell">
@@ -35,30 +35,32 @@
 
         <div class="sidebar-page is-active" id="navPanel" data-page-panel="navigation">
         <div class="panel-intro">
-          <span class="section-kicker">01 / PLAN</span>
-          <h2>配置一次导航</h2>
-          <p>点击地图选择起终点，或直接拖动地图上的标记。搜索动画会保留算法前沿与访问顺序。</p>
+          <div class="panel-intro-head">
+            <div>
+              <span class="section-kicker" id="planKicker">01 / PLAN</span>
+              <h2>配置一次导航</h2>
+            </div>
+            <button class="panel-close" id="panelCloseBtn" type="button" aria-label="关闭导航设置">×</button>
+          </div>
         </div>
 
         <div class="field-grid route-endpoints">
           <label class="field">
-            <span>起点节点</span>
-            <input id="startNode" value="" placeholder="点击地图设置起点" aria-label="起点节点" readonly>
+            <span>起点</span>
+            <input id="startNode" value="" placeholder="请输入起点" aria-label="起点" readonly>
           </label>
           <label class="field">
-            <span>终点节点</span>
-            <input id="endNode" value="" placeholder="再次点击地图设置终点" aria-label="终点节点" readonly>
+            <span>终点</span>
+            <input id="endNode" value="" placeholder="请输入终点" aria-label="终点" readonly>
           </label>
         </div>
-        <div class="nav-stop-summary" id="navStopSummary">加载路网后，在地图上依次点击起点和终点。</div>
+        <div class="nav-stop-summary" id="navStopSummary">请在地图上依次点击起点和终点，位置会自动吸附到最近的道路节点。</div>
 
         <div class="control-actions control-actions-priority">
-          <button class="button button-primary" id="planBtn"><span class="button-icon">↗</span>规划并回放搜索</button>
+          <button class="button button-primary" id="planBtn"><span class="button-icon">↗</span>路线</button>
           <div class="action-row">
-            <button class="button button-secondary" id="contractionBtn"><span class="button-icon">⌁</span>CH 收缩过程</button>
             <button class="button button-secondary" id="driveBtn"><span class="button-icon">●</span>车辆行驶</button>
           </div>
-          <button class="button button-quiet button-wide" id="trafficBtn"><span class="button-icon">≋</span>模拟拥堵</button>
         </div>
 
         <div class="region-row">
@@ -78,9 +80,8 @@
             <option value="baidu">百度地图（实验图层）</option>
           </select>
         </label>
-        <div class="network-row">
-          <div><span class="field-label">路径路网</span><small id="networkStatus">等待加载 OSM 道路数据</small></div>
-          <button class="button button-region" id="loadNetworkBtn" type="button"><span class="button-icon">⌁</span>加载武汉路网</button>
+        <div class="quick-display-row">
+          <label class="toggle-row"><input type="checkbox" id="networkContrast" checked><span class="toggle-ui"></span><span>底图压暗</span></label>
         </div>
         <div class="field-grid route-options">
           <label class="field">
@@ -125,6 +126,13 @@
               <div class="toggle-list">
                 <label class="toggle-row"><input type="checkbox" id="avoidHighway"><span class="toggle-ui"></span><span>禁止高速</span></label>
                 <label class="toggle-row"><input type="checkbox" id="avoidTraffic"><span class="toggle-ui"></span><span>额外惩罚拥堵</span></label>
+              </div>
+            </div>
+            <div class="advanced-section">
+              <div class="advanced-section-title">演示功能</div>
+              <div class="action-row advanced-action-row">
+                <button class="button button-secondary" id="contractionBtn" type="button"><span class="button-icon">⌁</span>CH 收缩</button>
+                <button class="button button-quiet" id="trafficBtn" type="button"><span class="button-icon">≋</span>模拟拥堵</button>
               </div>
             </div>
             <label class="skin-picker">
@@ -189,13 +197,23 @@
       <section class="map-stage">
         <div id="map" aria-label="路径规划地图"></div>
         <div class="map-overlay map-overlay-top">
-          <div class="map-search" role="search">
-            <span class="map-search-icon" aria-hidden="true">⌕</span>
-            <input id="poiSearchInput" type="search" placeholder="搜索城市、区域或道路" aria-label="搜索城市、区域或道路" autocomplete="off">
-            <button type="button" id="poiSearchBtn" aria-label="搜索地图区域">搜索</button>
+          <div class="map-search-stack">
+            <div class="map-search" role="search">
+              <span class="map-search-icon" aria-hidden="true">⌕</span>
+              <input id="poiSearchInput" type="search" placeholder="搜索城市、区域或道路" aria-label="搜索城市、区域或道路" autocomplete="off">
+              <button type="button" id="poiSearchBtn" aria-label="搜索地图区域">搜索</button>
+            </div>
+            <div class="route-history-anchor" id="routeHistoryAnchor" hidden>
+              <details class="route-history" id="routeHistoryDetails">
+                <summary aria-label="展开历史搜索记录">
+                  <span class="route-history-label">历史搜索</span>
+                  <span class="route-history-count" id="routeHistoryCount">0</span>
+                </summary>
+                <div class="route-history-list" id="routeHistoryList"></div>
+              </details>
+            </div>
           </div>
           <div class="map-top-actions">
-            <button class="menu-trigger" id="menuBtn" type="button" aria-expanded="false" aria-controls="navPanel"><span aria-hidden="true">☰</span><span>菜单</span></button>
             <div class="map-chip"><span class="chip-pulse"></span><span id="mapStatus">准备就绪</span></div>
             <button class="icon-button" id="fitBtn" title="查看完整路线" aria-label="查看完整路线">⌖</button>
           </div>
@@ -212,14 +230,22 @@
             <span class="section-kicker">02 / INSIGHT</span>
             <h2>导航路线摘要</h2>
           </div>
-          <span class="status-badge" id="resultBadge">待规划</span>
+          <div class="panel-heading-actions">
+            <span class="status-badge" id="resultBadge">待规划</span>
+            <button class="panel-close" id="insightCloseBtn" type="button" aria-label="收起路线摘要">×</button>
+          </div>
         </div>
         <div class="metrics-grid">
           <div class="metric"><span>路线距离</span><strong id="distanceMetric">—</strong><small>km</small></div>
-          <div class="metric"><span>预计用时</span><strong id="timeMetric">—</strong><small>min</small></div>
           <div class="metric"><span>搜索扩展</span><strong id="expandedMetric">—</strong><small>nodes</small></div>
-          <div class="metric"><span>查询耗时</span><strong id="queryMetric">—</strong><small>ms</small></div>
+          <div class="metric"><span>搜索耗时</span><strong id="queryMetric">—</strong><small>ms</small></div>
         </div>
+
+        <section class="comparison-section" id="comparisonSection" hidden>
+          <div class="section-line"><span>同一路线搜索对比</span><span id="comparisonCount">0 次</span></div>
+          <div class="comparison-list" id="comparisonList"></div>
+          <p class="comparison-hint" id="comparisonHint">再次规划同一起终点，可对比不同算法的搜索表现。</p>
+        </section>
 
         <div class="route-card">
           <div class="route-card-head"><span>当前策略</span><strong id="strategyLabel">A* · 最快</strong></div>
@@ -241,6 +267,6 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=28"></script>
+  <script src="app.js?v=44"></script>
 </body>
 </html>

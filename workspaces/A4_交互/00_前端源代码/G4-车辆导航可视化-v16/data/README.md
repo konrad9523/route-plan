@@ -1,19 +1,27 @@
-# Local OSM data
+# OSM data
 
-The browser first tries to load `wuhan-main-roads.json` from this directory.
-The checked-in file is a small real extract around central Wuhan. It contains
-only major OSM roads, not POIs or a full-city dump.
+The normal runtime source is `data/server/wuhan-main-roads.json`, which is
+loaded by `server.py` and queried by bbox. The browser never downloads this
+full-city file in one request.
 
-To download a fresh small extract, run from the project directory:
+`wuhan-main-roads.json` is a small real extract around Wuhan's Optics Valley
+area. It remains as a fallback for opening the page when the full server cache
+has not been generated. It contains only major OSM roads, not POIs.
+
+When the local server is running, panning into a new area requests the matching
+part of the full Wuhan server cache through `/api/network`. Clicking outside
+the current cache or finding no route triggers the same server request. The
+browser receives only the requested area, not the full-city file.
+
+To generate the full server cache from an OSM PBF, run from the project root:
 
 ```text
-python tools/download_osm_network.py
+py tools/build_wuhan_network.py --pbf E:\\G4-A4数据\\hubei-latest.osm.pbf
 ```
 
-The script first uses the official OSM map API for the small bounding box and
-then falls back to Overpass. The extract uses the same Wuhan bounding box and
-main-road filter as the web page. If the local file is absent, the page falls
-back to the Overpass API.
+The normal startup requires the full server file. The old small cache is not
+used by `server.py`, so an incomplete local setup is reported clearly instead
+of silently producing incomplete routes.
 
 The data comes from OpenStreetMap and is distributed under the Open Database
 License (ODbL). Keep the source, date, bounding box, and attribution metadata
