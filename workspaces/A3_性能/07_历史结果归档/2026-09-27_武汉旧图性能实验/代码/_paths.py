@@ -6,7 +6,8 @@ import os
 from pathlib import Path
 
 CODE_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CODE_DIR.parents[3]
+PROJECT_ROOT = next(parent for parent in CODE_DIR.parents
+                    if (parent / "pyproject.toml").is_file() and (parent / "workspaces").is_dir())
 WORKSPACE_DATA = Path(
     os.environ.get("ROUTE_PLAN_DATA_DIR") or PROJECT_ROOT / "cache" / "a3_wuhan"
 ).expanduser().resolve()
