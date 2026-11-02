@@ -23,7 +23,7 @@ from scipy.sparse.csgraph import connected_components
 SCRIPT_DIR = Path(__file__).resolve().parent
 A3_ROOT = SCRIPT_DIR.parents[1]
 PROJECT_ROOT = A3_ROOT.parents[1]
-ALGORITHM_DIR = SCRIPT_DIR
+ALGORITHM_DIR = A3_ROOT / "01_基准方法" / "代码"
 BASELINE_DIR = PROJECT_ROOT / "workspaces" / "A2_算法" / "01_实现清单"
 DATA_DIR = A3_ROOT / "深圳实验数据_本地"
 SOURCE_DIR = DATA_DIR / "解压"

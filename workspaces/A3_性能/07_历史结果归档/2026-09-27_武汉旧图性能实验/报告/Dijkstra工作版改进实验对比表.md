@@ -1,7 +1,7 @@
 # Dijkstra 工作版逐层消融（武汉路网，逐查询配对版）
 
 > 归档整理：2026-10-12；历史实验日期为 2026-09-27。本次调整复现路径，不把历史耗时冒充新测结果。
-> 代码在 `../01_基准方法/代码/`，结果见 `../02_基准结果/`、`../03_实验结果/`；先读[实验复现说明](../01_基准方法/武汉路网实验复现说明.md)。
+> 代码在 `../01_基准方法/代码/`，结果见 `../02_基准结果/`、`../03_实验结果/`；先读[实验复现说明](../武汉路网实验复现说明.md)。
 
 
 本版用于最终层间比较：每一阶段都使用**同一份完整预检过的武汉图**及同一批 50 组点对。第 4 层与第 5 层不是用不同质量的数据：第 4 层是已预检输入上的无重复边检查内核，第 5 层调用真实工作版 Dijkstra，增加 `_Prepared` 缓存及工作版实际结果/路径处理。
@@ -51,4 +51,4 @@
 
 平面势函数重加权边 `w'(u,v)=w(u,v)+h(v)-h(u)` 的独立检查覆盖 50 个目标、10,319,150 次目标-边检查，发现 1,627 条边小于 `-1e-5 m`，最小 `-0.029459993 m`。不满足 Dijkstra 的非负边权条件，因此不把该可选分支作为有效 Dijkstra 运行测试。
 
-复现实验：[`wuhan_dijkstra_layered_ablation_v3.py`](../01_基准方法/代码/wuhan_dijkstra_layered_ablation_v3.py)；完整逐查询数据：[`wuhan_dijkstra_layered_results_v3.json`](../03_实验结果/wuhan_dijkstra_layered_results_v3.json)。
+复现实验：[`wuhan_dijkstra_layered_ablation_v3.py`](../代码/wuhan_dijkstra_layered_ablation_v3.py)；完整逐查询数据：[`wuhan_dijkstra_layered_results_v3.json`](../结果/wuhan_dijkstra_layered_results_v3.json)。
