@@ -11,9 +11,11 @@
 #include <limits>
 #include <numeric>
 #include <random>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -88,7 +90,7 @@ struct EdgeRecord {
 static_assert(sizeof(EdgeRecord) == 16, "graph binary edge layout changed");
 
 struct Query {
-    std::size_t pool_index = 0;
+    std::size_t query_index = 0;
     int source = -1;
     int target = -1;
 };
@@ -181,52 +183,151 @@ GraphData load_graph(const std::string& path) {
     return data;
 }
 
-std::vector<Query> read_query_pool(const std::string& path) {
-    std::ifstream input(path);
-    if (!input) throw std::runtime_error("cannot open fixed query pool");
-    std::string line;
-    if (!std::getline(input, line)) throw std::runtime_error("query pool is empty");
-    std::vector<Query> queries;
-    while (std::getline(input, line)) {
-        if (line.empty()) continue;
-        std::istringstream row(line);
-        std::string query_id, source, target;
-        if (!std::getline(row, query_id, ',') || !std::getline(row, source, ',') ||
-            !std::getline(row, target, ',')) {
-            throw std::runtime_error("malformed query pool row");
+std::vector<int> largest_strongly_connected_component(const RoadGraph& graph) {
+    const std::size_t node_count = graph.size();
+    std::vector<std::vector<int>> reverse(node_count);
+    for (std::size_t source = 0; source < node_count; ++source) {
+        for (const Edge& edge : graph.outgoing[source]) {
+            reverse[static_cast<std::size_t>(edge.to)].push_back(static_cast<int>(source));
         }
-        queries.push_back({static_cast<std::size_t>(std::stoull(query_id)),
-                           std::stoi(source), std::stoi(target)});
     }
-    if (queries.empty()) throw std::runtime_error("query pool contains no pairs");
+
+    std::vector<unsigned char> visited(node_count, 0);
+    std::vector<int> finish_order;
+    finish_order.reserve(node_count);
+    std::vector<std::pair<int, std::size_t>> dfs;
+    for (std::size_t start = 0; start < node_count; ++start) {
+        if (visited[start]) continue;
+        visited[start] = 1;
+        dfs.emplace_back(static_cast<int>(start), 0);
+        while (!dfs.empty()) {
+            int node = dfs.back().first;
+            std::size_t& next_edge = dfs.back().second;
+            const auto& outgoing = graph.outgoing[static_cast<std::size_t>(node)];
+            if (next_edge < outgoing.size()) {
+                const int next = outgoing[next_edge++].to;
+                if (!visited[static_cast<std::size_t>(next)]) {
+                    visited[static_cast<std::size_t>(next)] = 1;
+                    dfs.emplace_back(next, 0);
+                }
+            } else {
+                finish_order.push_back(node);
+                dfs.pop_back();
+            }
+        }
+    }
+
+    std::fill(visited.begin(), visited.end(), static_cast<unsigned char>(0));
+    std::vector<int> stack;
+    std::vector<int> largest;
+    for (auto it = finish_order.rbegin(); it != finish_order.rend(); ++it) {
+        const int start = *it;
+        if (visited[static_cast<std::size_t>(start)]) continue;
+        std::vector<int> component;
+        visited[static_cast<std::size_t>(start)] = 1;
+        stack.push_back(start);
+        while (!stack.empty()) {
+            const int node = stack.back();
+            stack.pop_back();
+            component.push_back(node);
+            for (const int next : reverse[static_cast<std::size_t>(node)]) {
+                if (!visited[static_cast<std::size_t>(next)]) {
+                    visited[static_cast<std::size_t>(next)] = 1;
+                    stack.push_back(next);
+                }
+            }
+        }
+        if (component.size() > largest.size()) largest = std::move(component);
+    }
+    std::sort(largest.begin(), largest.end());
+    return largest;
+}
+
+std::vector<Query> generate_queries(const std::vector<int>& candidates,
+                                   std::size_t query_count,
+                                   std::mt19937_64& rng) {
+    if (candidates.size() < 2) {
+        throw std::runtime_error("largest strongly connected component has fewer than two nodes");
+    }
+    if (query_count > candidates.size() * (candidates.size() - 1)) {
+        throw std::invalid_argument("query_count exceeds the number of unique ordered pairs in the largest SCC");
+    }
+    std::uniform_int_distribution<std::size_t> choose(0, candidates.size() - 1);
+    std::set<std::pair<int, int>> selected;
+    while (selected.size() < query_count) {
+        const int source = candidates[choose(rng)];
+        const int target = candidates[choose(rng)];
+        if (source != target) selected.emplace(source, target);
+    }
+    std::vector<Query> queries;
+    queries.reserve(query_count);
+    for (const auto& pair : selected) {
+        queries.push_back({queries.size(), pair.first, pair.second});
+    }
     return queries;
 }
 
-std::vector<int64_t> read_landmarks(const std::string& path) {
-    std::ifstream input(path);
-    if (!input) throw std::runtime_error("cannot open landmark file");
-    std::string line;
-    if (!std::getline(input, line)) throw std::runtime_error("landmark file is empty");
-    std::vector<std::pair<int, int64_t>> ranked;
-    while (std::getline(input, line)) {
-        if (line.empty()) continue;
-        std::istringstream row(line);
-        std::string network, rank, node;
-        if (!std::getline(row, network, ',') || !std::getline(row, rank, ',') ||
-            !std::getline(row, node, ',')) {
-            throw std::runtime_error("malformed landmark row");
+std::vector<int64_t> select_landmarks(const GraphData& data,
+                                      const std::vector<int>& candidates) {
+    if (candidates.size() < kLandmarkCount) {
+        throw std::runtime_error("largest strongly connected component has fewer than 8 nodes");
+    }
+    double mean_lon = 0.0, mean_lat = 0.0;
+    for (std::size_t node = 0; node < data.lon.size(); ++node) {
+        mean_lon += data.lon[node];
+        mean_lat += data.lat[node];
+    }
+    mean_lon /= static_cast<double>(data.lon.size());
+    mean_lat /= static_cast<double>(data.lat.size());
+    constexpr double earth_radius_m = 6'371'000.0;
+    constexpr double radians_per_degree = 3.14159265358979323846 / 180.0;
+    const double lat_scale = std::cos(mean_lat * radians_per_degree);
+    const double lon_scale = earth_radius_m * radians_per_degree * lat_scale;
+    const double lat_meters = earth_radius_m * radians_per_degree;
+
+    std::vector<std::pair<double, double>> projected;
+    projected.reserve(candidates.size());
+    for (const int node : candidates) {
+        projected.emplace_back((data.lon[static_cast<std::size_t>(node)] - mean_lon) * lon_scale,
+                               (data.lat[static_cast<std::size_t>(node)] - mean_lat) * lat_meters);
+    }
+    std::size_t first = 0;
+    for (std::size_t i = 1; i < candidates.size(); ++i) {
+        if (std::tie(projected[i].first, projected[i].second, candidates[i]) <
+            std::tie(projected[first].first, projected[first].second, candidates[first])) {
+            first = i;
         }
-        ranked.emplace_back(std::stoi(rank), std::stoll(node));
     }
-    std::sort(ranked.begin(), ranked.end());
-    if (ranked.size() < kLandmarkCount) {
-        throw std::runtime_error("landmark file has fewer than 8 landmarks");
+
+    std::vector<double> nearest_sq(candidates.size(), std::numeric_limits<double>::infinity());
+    std::vector<std::size_t> selected;
+    selected.reserve(kLandmarkCount);
+    selected.push_back(first);
+    auto update_distances = [&](std::size_t landmark) {
+        const auto [x0, y0] = projected[landmark];
+        for (std::size_t i = 0; i < projected.size(); ++i) {
+            const double dx = projected[i].first - x0;
+            const double dy = projected[i].second - y0;
+            nearest_sq[i] = std::min(nearest_sq[i], dx * dx + dy * dy);
+        }
+    };
+    update_distances(first);
+    while (selected.size() < kLandmarkCount) {
+        std::size_t next = candidates.size();
+        for (std::size_t i = 0; i < candidates.size(); ++i) {
+            if (std::find(selected.begin(), selected.end(), i) != selected.end()) continue;
+            if (next == candidates.size() || nearest_sq[i] > nearest_sq[next] ||
+                (nearest_sq[i] == nearest_sq[next] && candidates[i] < candidates[next])) {
+                next = i;
+            }
+        }
+        selected.push_back(next);
+        update_distances(next);
     }
+
     std::vector<int64_t> landmarks;
     landmarks.reserve(kLandmarkCount);
-    for (std::size_t i = 0; i < kLandmarkCount; ++i) {
-        landmarks.push_back(ranked[i].second);
-    }
+    for (const std::size_t index : selected) landmarks.push_back(candidates[index]);
     return landmarks;
 }
 
@@ -452,69 +553,52 @@ std::string csv_field(const std::string& value) {
 }  // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 14) {
+    if (argc != 11) {
         std::cerr << "usage: performance_comparison <graph.bin> <network> "
-                     "<query_pool.csv> <landmarks.csv> <query_count> <rounds> "
-                     "<seed> <algorithms_csv> <raw.csv> <preprocess.csv> "
-                     "<queries_used.csv> <ch_cache.bin> <ch_cache_key>\n";
+                     "<query_count> <rounds> <seed> <algorithms_csv> "
+                     "<raw.csv> <preprocess.csv> <ch_cache.bin> <ch_cache_key>\n";
         return 2;
     }
     try {
         const std::string graph_path = argv[1];
         const std::string network = argv[2];
-        const std::string query_path = argv[3];
-        const std::string landmark_path = argv[4];
-        const std::size_t query_count = static_cast<std::size_t>(std::stoull(argv[5]));
-        const int rounds = std::stoi(argv[6]);
-        const uint64_t seed = std::stoull(argv[7]);
-        const std::vector<int> algorithms = parse_algorithms(argv[8]);
-        const std::string raw_path = argv[9];
-        const std::string preprocess_path = argv[10];
-        const std::string used_queries_path = argv[11];
-        const std::string ch_cache_path = argv[12];
-        const std::string ch_cache_key = argv[13];
+        const std::size_t query_count = static_cast<std::size_t>(std::stoull(argv[3]));
+        const int rounds = std::stoi(argv[4]);
+        const uint64_t seed = std::stoull(argv[5]);
+        const std::vector<int> algorithms = parse_algorithms(argv[6]);
+        const std::string raw_path = argv[7];
+        const std::string preprocess_path = argv[8];
+        const std::string ch_cache_path = argv[9];
+        const std::string ch_cache_key = argv[10];
         if (query_count == 0 || rounds <= 0) throw std::invalid_argument("count and rounds must be positive");
+        const bool include_astar = std::find(algorithms.begin(), algorithms.end(), 1) != algorithms.end();
+        const bool include_biastar = std::find(algorithms.begin(), algorithms.end(), 2) != algorithms.end();
+        const bool include_ch = std::find(algorithms.begin(), algorithms.end(), 4) != algorithms.end();
 
         const auto load_begin = std::chrono::steady_clock::now();
         GraphData data = load_graph(graph_path);
         const auto load_end = std::chrono::steady_clock::now();
-        const std::vector<Query> pool = read_query_pool(query_path);
-        if (query_count > pool.size()) throw std::invalid_argument("query_count exceeds fixed valid query pool");
-        const std::vector<int64_t> landmarks = read_landmarks(landmark_path);
-        for (const int64_t landmark : landmarks) {
-            if (landmark < 0 || static_cast<std::size_t>(landmark) >= data.graph.size())
-                throw std::runtime_error("landmark node ID is outside the graph");
-        }
+        const auto query_begin = std::chrono::steady_clock::now();
+        const std::vector<int> query_component = largest_strongly_connected_component(data.graph);
+        std::mt19937_64 query_rng(seed);
+        const std::vector<Query> queries = generate_queries(query_component, query_count, query_rng);
+        const auto query_end = std::chrono::steady_clock::now();
+        const double query_generation_ms = std::chrono::duration<double, std::milli>(
+            query_end - query_begin).count();
 
-        std::mt19937_64 rng(seed);
-        std::vector<std::size_t> selected(pool.size());
-        std::iota(selected.begin(), selected.end(), 0);
-        std::shuffle(selected.begin(), selected.end(), rng);
-        selected.resize(query_count);
-        std::sort(selected.begin(), selected.end());
-        std::vector<Query> queries;
-        queries.reserve(query_count);
-        for (std::size_t i : selected) queries.push_back(pool[i]);
+        const auto landmark_begin = std::chrono::steady_clock::now();
+        const std::vector<int64_t> landmarks = include_astar || include_biastar
+            ? select_landmarks(data, query_component)
+            : std::vector<int64_t>{};
+        const auto landmark_end = std::chrono::steady_clock::now();
+        const double landmark_selection_ms = std::chrono::duration<double, std::milli>(
+            landmark_end - landmark_begin).count();
 
-        std::ofstream used_queries(used_queries_path, std::ios::trunc);
-        if (!used_queries) throw std::runtime_error("cannot create query output CSV");
-        used_queries << "query,pool_index,source_index,target_index\n";
-        for (std::size_t i = 0; i < queries.size(); ++i) {
-            const Query& q = queries[i];
-            if (q.source < 0 || q.target < 0 ||
-                static_cast<std::size_t>(q.source) >= data.graph.size() ||
-                static_cast<std::size_t>(q.target) >= data.graph.size() || q.source == q.target)
-                throw std::runtime_error("fixed query has an invalid endpoint");
-            used_queries << i << ',' << q.pool_index << ',' << q.source << ',' << q.target << '\n';
-        }
-        used_queries.close();
+        std::mt19937_64 rng(seed ^ 0x9e3779b97f4a7c15ULL);
 
         const std::array<std::string, 5> algorithm_names = {
             "dijkstra", "astar", "bidirectional_astar",
             "bidirectional_dijkstra", "ch"};
-        const bool include_astar = std::find(algorithms.begin(), algorithms.end(), 1) != algorithms.end();
-        const bool include_biastar = std::find(algorithms.begin(), algorithms.end(), 2) != algorithms.end();
-        const bool include_ch = std::find(algorithms.begin(), algorithms.end(), 4) != algorithms.end();
         void* dijkstra = nullptr;
         void* astar = nullptr;
         void* ch = nullptr;
@@ -631,7 +715,7 @@ int main(int argc, char** argv) {
 
             std::ofstream raw(raw_path, std::ios::trunc);
             if (!raw) throw std::runtime_error("cannot create raw result CSV");
-            raw << "network,query,pool_index,source_index,target_index,algorithm,round,elapsed_ns,kernel_ns,"
+            raw << "network,query,source_index,target_index,algorithm,round,elapsed_ns,kernel_ns,"
                    "distance_m,expanded_nodes,queue_pushes,scanned_edges,heuristic_evaluations\n";
             for (int round = 0; round < rounds; ++round) {
                 std::vector<std::size_t> query_order(queries.size());
@@ -648,7 +732,7 @@ int main(int argc, char** argv) {
                         if (std::abs(result.path.cost - oracle[qi]) >
                             1e-8 * std::max(1.0, std::abs(oracle[qi])))
                             throw std::runtime_error("timed route differs from Dijkstra L4 distance");
-                        raw << network << ',' << qi << ',' << queries[qi].pool_index << ','
+                        raw << network << ',' << qi << ','
                             << queries[qi].source << ',' << queries[qi].target << ','
                             << algorithm_names[algorithm] << ',' << round << ','
                             << result.elapsed_ns << ',' << result.kernel_ns << ','
@@ -663,7 +747,8 @@ int main(int argc, char** argv) {
             std::ofstream prep(preprocess_path, std::ios::trunc);
             if (!prep) throw std::runtime_error("cannot create preprocessing CSV");
             const auto load_ms = std::chrono::duration<double, std::milli>(load_end - load_begin).count();
-            prep << "network,algorithms,nodes,directed_edges,query_pool,queries,rounds,landmarks,"
+            prep << "network,algorithms,nodes,directed_edges,query_component_nodes,queries,rounds,landmarks,"
+                    "query_generation_ms,landmark_selection_ms,"
                     "binary_load_and_csr_ms,dijkstra_graph_init_ms,astar_graph_geometry_reverse_alt_ms,"
                     "bidirectional_index_alt_ms,ch_preprocess_ms,ch_cache_load_ms,ch_cache_hit,"
                     "ch_setup_ms,ch_hierarchy_arcs,ch_shortcut_count\n"
@@ -673,7 +758,9 @@ int main(int argc, char** argv) {
                 prep << algorithm_names[algorithms[i]];
             }
             prep << ',' << data.graph.size() << ',' << data.edge_weights.size() << ','
-                 << pool.size() << ',' << queries.size() << ',' << rounds << ',' << kLandmarkCount << ','
+                 << query_component.size() << ',' << queries.size() << ',' << rounds << ',' << landmarks.size() << ','
+                 << std::fixed << std::setprecision(3) << query_generation_ms << ','
+                 << landmark_selection_ms << ','
                  << std::fixed << std::setprecision(3) << load_ms << ',';
             if (dijkstra) prep << dijkstra_init_ms;
             prep << ',';

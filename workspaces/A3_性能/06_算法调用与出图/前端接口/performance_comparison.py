@@ -21,7 +21,6 @@ CALLS_DIR = INTERFACE_DIR.parent
 A3_DIR = CALLS_DIR.parent
 REPO_ROOT = A3_DIR.parent.parent
 MANIFEST_PATH = REPO_ROOT / "data" / "a3_network_manifest.json"
-QUERY_CONFIG_DIR = INTERFACE_DIR / "查询配置"
 EXECUTABLE = CALLS_DIR / ".build" / "performance_comparison.exe"
 BUILD_SCRIPT = CALLS_DIR / "cpp" / "build_performance_comparison.ps1"
 GRAPH_CACHE = CALLS_DIR / ".build" / "graph_cache"
@@ -95,7 +94,6 @@ def _quantile(values: list[float], probability: float) -> float:
 def _network_payload(result_dir: Path, network_id: str) -> dict:
     raw_rows = _read_csv(result_dir / f"{network_id}_raw.csv")
     prep_rows = _read_csv(result_dir / f"{network_id}_preprocess.csv")
-    used_queries = _read_csv(result_dir / f"{network_id}_queries_used.csv")
     if not raw_rows or len(prep_rows) != 1:
         raise ValueError(f"{network_id}: raw timings or preprocessing record is missing")
 
@@ -112,7 +110,6 @@ def _network_payload(result_dir: Path, network_id: str) -> dict:
         elapsed_ms = int(row["elapsed_ns"]) / 1_000_000
         normalized_row = {
             "query": query_id,
-            "pool_index": int(row["pool_index"]),
             "source": int(row["source_index"]),
             "target": int(row["target_index"]),
             "algorithm": algorithm,
@@ -130,7 +127,6 @@ def _network_payload(result_dir: Path, network_id: str) -> dict:
         distances[algorithm][query_id] = normalized_row["distance_m"]
         query_map[query_id] = {
             "query": query_id,
-            "pool_index": normalized_row["pool_index"],
             "source": normalized_row["source"],
             "target": normalized_row["target"],
         }
@@ -187,8 +183,6 @@ def _network_payload(result_dir: Path, network_id: str) -> dict:
 
     graph_meta = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     manifest_item = next(item for item in graph_meta["files"] if item["filename"] == NETWORKS[network_id]["graphml"])
-    query_file = QUERY_CONFIG_DIR / f"{network_id}_queries.csv"
-    query_sha = hashlib.sha256(query_file.read_bytes()).hexdigest()
     return {
         "network": {
             "id": network_id,
@@ -196,20 +190,25 @@ def _network_payload(result_dir: Path, network_id: str) -> dict:
             "nodes": int(prep["nodes"]),
             "directed_edges": int(prep["directed_edges"]),
             "graph_sha256": manifest_item["sha256"],
-            "query_pool_size": int(prep["query_pool"]),
-            "query_pool_sha256": query_sha,
+            "query_component_nodes": int(prep["query_component_nodes"]),
         },
         "config": {
             "query_count": len(query_map),
             "rounds": int(prep["rounds"]),
             "landmarks": int(prep["landmarks"]),
-            "sample_method": "seeded sample without replacement from the fixed, connected 100-pair query pool",
+            "sample_method": "runtime uniform sampling of unique ordered node pairs from the largest strongly connected component",
+            "landmark_method": (
+                "deterministic geographic farthest-point selection from the largest strongly connected component"
+                if int(prep["landmarks"]) else None
+            ),
         },
         "correctness": {
             "route_shape_and_edge_weight_sum": True,
             "selected_algorithm_distances_crosschecked": distance_crosschecked,
         },
         "preprocessing_ms": {
+            "query_generation": float(prep["query_generation_ms"]),
+            "landmark_selection": float(prep["landmark_selection_ms"]),
             "graphml_to_binary": conversion_ms,
             "binary_load_and_csr": float(prep["binary_load_and_csr_ms"]),
             "dijkstra_graph_init": _number_or_none(prep.get("dijkstra_graph_init_ms")),
@@ -382,19 +381,15 @@ def run_comparison(
     _ensure_executable(build_if_missing)
     binary, conversion_ms, binary_cache_hit = _ensure_binary(network)
     ch_cache_path, ch_cache_key = _ch_cache_info(network)
-    query_file = QUERY_CONFIG_DIR / f"{network}_queries.csv"
-    landmark_file = QUERY_CONFIG_DIR / f"{network}_landmarks.csv"
     if result_dir is None:
         with tempfile.TemporaryDirectory(prefix="a3-performance-", dir=CALLS_DIR / ".build") as temp_dir:
-            _run_native(binary, network, query_file, landmark_file,
-                        query_count, rounds, seed, algorithms, Path(temp_dir),
+            _run_native(binary, network, query_count, rounds, seed, algorithms, Path(temp_dir),
                         ch_cache_path, ch_cache_key)
             payload = build_frontend_payload(Path(temp_dir), networks=(network,))
     else:
         result_path = Path(result_dir)
         result_path.mkdir(parents=True, exist_ok=True)
-        _run_native(binary, network, query_file, landmark_file,
-                    query_count, rounds, seed, algorithms, result_path,
+        _run_native(binary, network, query_count, rounds, seed, algorithms, result_path,
                     ch_cache_path, ch_cache_key)
         payload = build_frontend_payload(result_path, networks=(network,))
     payload["networks"][0]["config"]["seed"] = seed
@@ -457,15 +452,14 @@ def run_comparison_suite(
     }
 
 
-def _run_native(binary, network, query_file, landmark_file, count, rounds, seed,
+def _run_native(binary, network, count, rounds, seed,
                 algorithms, output_dir, ch_cache_path, ch_cache_key):
     output_dir.mkdir(parents=True, exist_ok=True)
     args = [
-        str(EXECUTABLE), str(binary), network, str(query_file), str(landmark_file), str(count),
-        str(rounds), str(seed), ",".join(algorithms),
+        str(EXECUTABLE), str(binary), network, str(count), str(rounds), str(seed),
+        ",".join(algorithms),
         str(output_dir / f"{network}_raw.csv"),
         str(output_dir / f"{network}_preprocess.csv"),
-        str(output_dir / f"{network}_queries_used.csv"),
         str(ch_cache_path), ch_cache_key,
     ]
     subprocess.run(args, cwd=REPO_ROOT, check=True)
