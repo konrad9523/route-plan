@@ -23,6 +23,11 @@ api = [
     "fastapi>=0.110",
     "uvicorn>=0.27",
 ]
+a3-performance = [
+    "matplotlib>=3.8",
+    "numpy>=1.24",
+    "pandas>=2.0",
+]
 # 跑测试需要（TestClient 随 fastapi 提供，这里只列显式的）
 test = [
     "fastapi>=0.110",
