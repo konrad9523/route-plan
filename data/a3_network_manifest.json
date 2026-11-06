@@ -1,0 +1,31 @@
+{
+  "scope": "A3 fixed local inputs",
+  "recorded_date": "2026-11-03",
+  "tracked_graphml": false,
+  "files": [
+    {
+      "scale": "large",
+      "filename": "guangdong_driving_a1_fixed.graphml",
+      "nodes": 1072749,
+      "directed_edges": 2302459,
+      "size_bytes": 1291371326,
+      "sha256": "2F9AB61B8FAD6040C0CD68BD34FF045C66DD89D579DE1DB792AC540F74CE6382"
+    },
+    {
+      "scale": "medium",
+      "filename": "shenzhen_driving_a1_fixed.graphml",
+      "nodes": 85709,
+      "directed_edges": 176971,
+      "size_bytes": 92366955,
+      "sha256": "2E63E25F75A0A0B6A1AAD3AEF21075CBC9DBFE4E86C57FB287B940A6EC77A488"
+    },
+    {
+      "scale": "small",
+      "filename": "nanshan_driving_a1_fixed.graphml",
+      "nodes": 13357,
+      "directed_edges": 27893,
+      "size_bytes": 14486901,
+      "sha256": "71D25D66EBF36364132006B45D0DB10B89925131A923032D0C09ADC6EE4FEC90"
+    }
+  ]
+}
