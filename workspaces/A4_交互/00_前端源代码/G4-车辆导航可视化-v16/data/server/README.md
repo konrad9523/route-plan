@@ -1,11 +1,5 @@
-# 武汉服务器路网缓存
+# 路网运行数据说明
 
-`wuhan-main-roads.json` 是从 OSM PBF 中提取的武汉范围主要道路数据。它由
-`tools/build_wuhan_network.py` 生成，服务器启动后读取整份文件，但浏览器只通过
-`/api/network?bbox=south,west,north,east` 获取当前区域。
+完整桌面包中的 `data/server/` 保存广东省、深圳市和南山区 SQLite 路网索引。
 
-数据范围包含 `motorway`、`trunk`、`primary`、`secondary`、`tertiary` 及其连接道路，
-不包含 POI。数据来源为 OpenStreetMap，遵守 ODbL 1.0，并保留来源和下载时间元信息。
-
-如果服务器数据文件不存在，`server.py` 会暂时回退到上一级 `data/wuhan-main-roads.json`
-的小缓存；这只用于保证页面仍能打开，不代表全武汉数据已经准备完成。
+源码目录不提交这些大体量数据库文件，避免超过普通 Git 单文件限制。请从仓库 Releases 下载完整桌面包；解压后由本地 `server.py` 读取这些数据。

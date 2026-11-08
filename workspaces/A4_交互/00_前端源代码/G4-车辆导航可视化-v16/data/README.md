@@ -1,28 +1,13 @@
-# OSM data
+# 路网数据
 
-The normal runtime source is `data/server/wuhan-main-roads.json`, which is
-loaded by `server.py` and queried by bbox. The browser never downloads this
-full-city file in one request.
+完整桌面运行时使用 `data/server/` 下的三套 SQLite 路网索引：
 
-`wuhan-main-roads.json` is a small real extract around Wuhan's Optics Valley
-area. It remains as a fallback for opening the page when the full server cache
-has not been generated. It contains only major OSM roads, not POIs.
+- `guangdong-roads.sqlite`：广东省，A4 导航默认使用；
+- `shenzhen-roads.sqlite`：深圳市，A2/A3 性能测试；
+- `nanshan-roads.sqlite`：南山区，A2/A3 性能测试。
 
-When the local server is running, panning into a new area requests the matching
-part of the full Wuhan server cache through `/api/network`. Clicking outside
-the current cache or finding no route triggers the same server request. The
-browser receives only the requested area, not the full-city file.
+SQLite 由本地 `server.py` 读取，浏览器不下载或绘制完整路网。A4 请求由服务端计算后只返回搜索轨迹和最终路径。
 
-To generate the full server cache from an OSM PBF, run from the project root:
+本源码目录不提交这些大体量 SQLite 文件，避免超过普通 Git 单文件限制。需要直接运行时，请下载仓库 Releases 中的完整桌面包。
 
-```text
-py tools/build_wuhan_network.py --pbf E:\\G4-A4数据\\hubei-latest.osm.pbf
-```
-
-The normal startup requires the full server file. The old small cache is not
-used by `server.py`, so an incomplete local setup is reported clearly instead
-of silently producing incomplete routes.
-
-The data comes from OpenStreetMap and is distributed under the Open Database
-License (ODbL). Keep the source, date, bounding box, and attribution metadata
-with any redistributed copy.
+武汉 JSON 和旧的 OSM/Overpass 构建脚本如果仍存在，只作为历史资料，不参与当前服务运行。新的路网数据应按项目的 GraphML 转换工具生成对应 SQLite，并保留来源、时间、范围和 ODbL 许可信息。

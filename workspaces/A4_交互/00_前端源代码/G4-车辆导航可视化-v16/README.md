@@ -1,85 +1,71 @@
 # G4 车辆导航可视化
 
-基于 Leaflet 和 OpenStreetMap 数据的车辆路网导航实验页面，用于展示 Dijkstra 与 A* 的路径搜索过程。
+基于 Leaflet 的车辆路网导航实验系统。导航主流程由本地 Python 服务读取广东省 SQLite 路网并在后端计算，浏览器只接收搜索轨迹、节点坐标和最终路径，负责交互与动画展示。
+
+> 本目录是可审阅的源代码版本。三套 SQLite 路网、A2/A3 运行时、编译缓存和内置 Python 不提交到普通 Git 分支；完整可运行桌面包请从仓库 Releases 下载 `G4VehicleNavigation-windows-*.zip`。
 
 ## 运行
 
-1. Windows 用户双击 `start-server.bat`，脚本会自动启动本地 HTTP 服务；不需要手动输入 Python 命令。
+1. Windows 用户双击 `start-server.bat`。
 2. 浏览器访问 `http://localhost:5173/`。
-3. 服务器启动时读取 `data/server/wuhan-main-roads.json`，前端按地图区域自动请求路网。
-4. 直接在地图上依次点击起点和终点，再选择算法并开始规划。
+3. 在地图上依次点击起点和终点，位置会自动吸附到广东路网节点。
+4. 点击“路线”开始搜索；搜索过程中显示遍历折点和边界折点，完成后显示最终路线。需要演示车辆动画时，再点击“车辆行驶”。
 
-请通过 `start-server.bat` 或本地 HTTP 服务打开页面。浏览器会限制 `file://` 页面读取同目录 JSON，而自动路网请求也需要 HTTP 页面环境。
+不要直接双击 `index.html`。`file://` 页面没有本地 API，无法读取 SQLite 路网或调用后端路径规划。
 
-## 上传 GitHub 后如何演示
+## 当前功能
 
-### 方式一：克隆后本机完整运行（推荐协作使用）
+- A4 导航固定使用 `dataset=guangdong`，用户不需要管理底层路网文件。
+- 起点、终点点击和拖动，后端吸附到最近的真实道路节点。
+- Dijkstra、A*、双向 A*、CH 入口；CH 预处理过程在“算法成果 → CH 预处理回放”中展示。
+- A4 的无约束路线使用 A3 C++ 后端：Dijkstra L4、A* L4、双向 A* B1 和 CH；CH 使用随项目准备好的广东省缓存索引，不会在网页请求中现场构建大型索引。
+- 后端返回搜索轨迹和最终路径，前端展示搜索动画、最终路线动画、车辆回放和同一路线搜索对比。
+- 底图样式、底图压暗、路线历史记录、路线偏好和模拟拥堵功能保留。
+- “算法成果”包含 A2 基础版横向性能对比、A3 最新接口性能对比和 CH 预处理回放三个独立板块。
 
-请把项目文件夹中的内容直接放在仓库根目录，不要只上传压缩包。必须保留：
+## 数据与服务
 
-- `index.html`、`app.js`、`styles.css`
-- `server.py`、`start-server.bat`
-- `data/server/wuhan-main-roads.json`
-- `assets/`、`tools/` 和说明文档
+完整桌面包中的服务器端保存三套路网索引：
 
-其他开发者克隆仓库后，在 Windows 下双击 `start-server.bat`，再访问
-`http://localhost:5173/`。这种方式使用服务器按区域读取武汉路网，加载更快，功能与开发机一致。
+- `data/server/guangdong-roads.sqlite`：广东省，A4 默认使用；
+- `data/server/shenzhen-roads.sqlite`：深圳市，供 A2/A3 性能测试选择；
+- `data/server/nanshan-roads.sqlite`：南山区，供 A2/A3 性能测试选择。
 
-### 方式二：GitHub Pages 在线演示
+SQLite 是服务器内部可查询的数据文件，用户不需要打开或手动管理。首次执行路线时，服务端按需把所选图加载到内存并缓存；后续同一数据集的路线请求会复用内存图。路网几何只在端点吸附和最终路线返回时读取，不向浏览器绘制完整路网。
 
-在 GitHub 仓库的 `Settings` → `Pages` 中选择 `Deploy from a branch`，选择 `main` 分支和 `/ (root)`，保存后使用 GitHub Pages 地址打开。
+主要本地接口：
 
-GitHub Pages 没有 Python `/api/network` 服务，页面会自动读取仓库内的
-`data/server/wuhan-main-roads.json` 静态完整武汉路网。第一次加载可能需要等待一段时间，之后 Dijkstra、A*、起终点吸附、搜索动画和最终路径都在浏览器中运行。
+- `GET /api/health`：检查服务和三套数据集是否可用；
+- `GET /api/datasets`：返回三套数据集的名称、规模和范围；
+- `POST /api/route`：接收起点、终点、算法和路线选项，返回吸附结果、搜索轨迹、最终路径和耗时。四种 A3 C++ 路线响应会返回对应的 `algorithm_version`。
 
-GitHub Pages 和本地服务都需要联网加载 Leaflet、地图瓦片以及超出武汉缓存范围时的在线 OSM 数据。直接双击 `index.html` 的 `file://` 模式仍不支持自动路网加载。
+服务端不再提供旧的 `/api/network` 地图框选接口，也不再使用武汉 JSON、Overpass 或手动路网加载回退逻辑。项目中保留的武汉数据文件仅作历史资料，不参与当前运行。
 
-完整路网 JSON 约 35 MB，低于 GitHub 单文件 100 MB 限制，但超过 GitHub 网页上传的 25 MB 限制。请使用 Git push 或 GitHub Desktop 上传，不要在网页上单独拖拽这个 JSON 文件。
+## A2/A3 性能板块
 
-## 功能
+A2 横向对比和 A3 性能对比使用各自成员提供的接口。A2 服务运行在 `8000`，A3 适配服务运行在 `8100`，A4 导航仍运行在 `5173`；三者相互独立。A3 页面可选择广东、深圳、南山尺度，设置查询数、算法、轮数和随机种子后提交异步任务。A3 最新接口返回的是五种最终配置的性能表（p50、Q1–Q3、平均扩展节点和相对 Dijkstra 加速比），当前接口没有 `before/optimized` 双层结果，因此页面不再伪造优化前后数值。A2 的 `.rgraph` 缓存应由 A2 服务自己校验数据指纹；替换原始路网后再按 A2 的说明重建缓存。
 
-- OSM 主要道路路网加载
-- 服务器保存武汉范围主要道路，前端按 bbox 请求当前区域，缺失时回退到本地小缓存或 Overpass API
-- 起点、终点点击设置与拖动
-- 端点自动吸附到最近的真实 OSM 道路节点
-- Dijkstra 与 A* 路径搜索（A* 使用 Haversine 距离和安全启发式比例）
-- 已访问折点、边界折点和最终路径动画
-- 多种底图与页面皮肤
-
-路网显示逻辑：完整 OSM 路网会保留在浏览器内存中供 Dijkstra/A* 计算，但普通路网不会绘制。用户点击地图设置起终点；搜索过程中只显示已遍历折点、边界折点和当前折点；搜索完成后只显示最终路线动画。
-
-## 数据与服务说明
-
-- `data/server/wuhan-main-roads.json` 是服务器端的武汉范围主要道路缓存，不包含 POI。服务器启动后会读入整份数据，但不会把整份数据发给浏览器。
-- 浏览器只通过 `/api/network?bbox=south,west,north,east` 请求当前地图、起点或终点附近的道路，因此数据规模扩大后不会一次性拖慢页面。
-- `data/wuhan-main-roads.json` 仍保留为历史小范围文件，但正常启动服务器不会使用它；服务器缺少完整文件时会直接提示，避免误用小范围路网。
-- 地图不绘制完整路网。搜索动画只显示已遍历折点、候选边界折点和当前折点；搜索完成后只显示最终路线。
-- 地图底图使用 OpenStreetMap、Esri 或百度实验图层。
-- 使用 OpenStreetMap 数据时请遵守其版权与使用政策。
-- 本地服务 API 是正常路径；静态部署没有 `/api/network` 时，页面会回退到项目内的完整武汉路网，超出武汉范围时再请求 Overpass API。
-
-生成服务器数据：先准备湖北或武汉的 `.osm.pbf` 文件，再运行：
-
-```text
-py tools/build_wuhan_network.py --pbf E:\\G4-A4数据\\hubei-latest.osm.pbf
-```
-
-脚本只提取武汉范围的 OSM 主要道路，写入 `data/server/wuhan-main-roads.json`。
-请保留 JSON 内的来源、范围、时间及 ODbL 署名信息。
+若 A2 或 A3 接口尚未启动，对应性能板块会提示接口不可用，A4 导航不受影响。A4 服务启动时会预加载广东省图结构，把一次性 SQLite 读取成本移到启动阶段；A3 性能接口会复用已准备的缓存；A4 的 CH 索引随桌面包提供，启动时复制到系统临时目录后直接读取。GraphML 仍从 `E:\路径规划_G4-A4数据\广东省路网` 读取，不复制进前端目录。
 
 ## 项目结构
 
 ```text
 index.html          页面结构
-app.js              地图、路网、Dijkstra/A* 与交互逻辑
+app.js              地图交互、搜索动画、路线和车辆回放
 styles.css          页面样式
-assets/             页面资源
-data/               本地 OSM 数据与元信息
-data/server/        服务器端武汉主要道路缓存
-tools/              OSM 数据下载脚本
-server.py           提供静态页面与按区域路网 API 的本地服务器
-tools/astar_haversine.py
-                    与网页 A* 对齐的 Python 参考实现
-start-server.bat   本地启动脚本
-使用说明.txt        简要使用说明
+server.py           本地静态服务、路网吸附和后端路径规划
+a3_route_backend.py A3 C++ Dijkstra/A*/双向A*/CH 单路线后端适配
+a3_server.py        A3 Python 性能接口的本地 HTTP 适配层（8100）
+a3-runtime/         A3 最新接口与 C++ runner 源码；运行缓存位于其 .build/
+data/server/        广东、深圳、南山 SQLite 路网索引
+a2-api.js           A2 性能接口适配
+a3-api.js           A3 性能接口适配
+performance-dashboard.js  A2/A3 性能板块
+ch-replay.js        主地图 CH 预处理回放控制器
+assets/             页面皮肤资源
+.a3-route-build/    A3 单路线 C++ DLL 构建产物
+start-server.bat    Windows 一键启动脚本（5173、8000、8100）
+使用说明.txt        简要操作说明
 ```
+
+大体量 SQLite 数据不建议通过 GitHub 网页直接拖拽上传，应按团队约定使用 Git LFS、Release 附件或单独数据包。OpenStreetMap 数据重新分发时请保留来源、时间、范围和 ODbL 版权信息。

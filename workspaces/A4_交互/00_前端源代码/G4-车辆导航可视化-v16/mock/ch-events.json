@@ -1,0 +1,10 @@
+[
+  { "step": 1, "total": 8, "contracted_node": { "id": 127, "x": 18, "y": 52 }, "shortcuts_added": [{ "from": { "x": 8, "y": 65 }, "to": { "x": 45, "y": 32 }, "weight": 120 }] },
+  { "step": 2, "total": 8, "contracted_node": { "id": 393, "x": 34, "y": 38 }, "shortcuts_added": [] },
+  { "step": 3, "total": 8, "contracted_node": { "id": 938, "x": 52, "y": 62 }, "shortcuts_added": [{ "from": { "x": 42, "y": 72 }, "to": { "x": 76, "y": 48 }, "weight": 180 }] },
+  { "step": 4, "total": 8, "contracted_node": { "id": 1300, "x": 68, "y": 28 }, "shortcuts_added": [{ "from": { "x": 58, "y": 35 }, "to": { "x": 90, "y": 70 }, "weight": 240 }] },
+  { "step": 5, "total": 8, "contracted_node": { "id": 1664, "x": 82, "y": 54 }, "shortcuts_added": [] },
+  { "step": 6, "total": 8, "contracted_node": { "id": 2099, "x": 43, "y": 78 }, "shortcuts_added": [{ "from": { "x": 24, "y": 84 }, "to": { "x": 78, "y": 18 }, "weight": 310 }] },
+  { "step": 7, "total": 8, "contracted_node": { "id": 2552, "x": 25, "y": 22 }, "shortcuts_added": [] },
+  { "step": 8, "total": 8, "contracted_node": { "id": 2994, "x": 76, "y": 82 }, "shortcuts_added": [{ "from": { "x": 12, "y": 18 }, "to": { "x": 92, "y": 82 }, "weight": 460 }] }
+]
