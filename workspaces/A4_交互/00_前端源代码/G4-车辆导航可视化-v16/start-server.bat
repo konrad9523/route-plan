@@ -1,31 +1,23 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 cd /d "%~dp0"
+title G4 All Services
 
-if not exist "%~dp0data\server\wuhan-main-roads.json" (
-  echo 未找到完整武汉路网文件：data\server\wuhan-main-roads.json
-  echo 请先生成服务器路网数据，再启动网站。
-  pause
-  exit /b 1
+set "RUN_PYTHON=E:\app\python\python.exe"
+if not exist "%RUN_PYTHON%" set "RUN_PYTHON="
+if not defined RUN_PYTHON (
+  where python >nul 2>&1
+  if not errorlevel 1 set "RUN_PYTHON=python"
 )
+if not defined RUN_PYTHON goto :failed
 
-where py >nul 2>&1
-if %errorlevel%==0 goto start_server_py
+"%RUN_PYTHON%" -B start-all.py
+set "EXIT_CODE=%errorlevel%"
+echo.
+if not "%EXIT_CODE%"=="0" pause
+exit /b %EXIT_CODE%
 
-where python >nul 2>&1
-if %errorlevel%==0 goto start_server_python
-
-echo 未检测到 Python，将直接打开网页。
-start "" "%~dp0index.html"
+:failed
+echo Python was not found. Services cannot start.
 pause
-exit /b
-
-:start_server_py
-start "" "http://localhost:5173/"
-py server.py
-exit /b
-
-:start_server_python
-start "" "http://localhost:5173/"
-python server.py
-exit /b
+exit /b 1

@@ -10,10 +10,14 @@ Thumbs.db
 node_modules/
 dist/
 build/
+a3-runtime/**/.build/
+a3-runtime/**/__pycache__/
+.a3-route-build/
 
 # The original regional cache remains as a fallback. The generated full-city
 # server extract can be checked in when its size is reviewed by the team.
 # data/server/wuhan-main-roads.json
+data/server/*-roads.sqlite
 
 # Local personal work areas
 workspaces-local/
