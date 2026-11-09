@@ -1,0 +1,93 @@
+{
+  "dataset": {
+    "id": "nanshan",
+    "nodes": 13357,
+    "edges": 27893,
+    "graph_load_ms": 4.8296
+  },
+  "algorithms": {
+    "dijkstra": {
+      "preprocess_ms": 0,
+      "query_mean_ms": 0.7815847,
+      "query_p50_ms": 0.77145,
+      "query_p95_ms": 1.491895,
+      "expanded_mean": 6432.396,
+      "queue_pushes_mean": 7082.851,
+      "valid_queries": 1000,
+      "shortcut_edges": 0,
+      "index_edges": 0,
+      "estimated_index_mb": 0,
+      "cache_hit": true
+    },
+    "astar": {
+      "preprocess_ms": 3.598005,
+      "query_mean_ms": 0.3605462,
+      "query_p50_ms": 0.2272,
+      "query_p95_ms": 1.201465,
+      "expanded_mean": 1887.592,
+      "queue_pushes_mean": 2222.069,
+      "valid_queries": 1000,
+      "shortcut_edges": 0,
+      "index_edges": 0,
+      "estimated_index_mb": 7.62939453125e-06,
+      "cache_hit": true
+    },
+    "bidirectional_astar": {
+      "preprocess_ms": 3.272214,
+      "query_mean_ms": 0.2753617,
+      "query_p50_ms": 0.1699,
+      "query_p95_ms": 0.876615,
+      "expanded_mean": 1426.967,
+      "queue_pushes_mean": 1743.921,
+      "valid_queries": 1000,
+      "shortcut_edges": 0,
+      "index_edges": 27893,
+      "estimated_index_mb": 1.24985504150391,
+      "cache_hit": true
+    },
+    "ch": {
+      "preprocess_ms": 161.238161,
+      "query_mean_ms": 0.0351984,
+      "query_p50_ms": 0.0339,
+      "query_p95_ms": 0.06611,
+      "expanded_mean": 149.413,
+      "queue_pushes_mean": 284.596,
+      "valid_queries": 1000,
+      "shortcut_edges": 29581,
+      "index_edges": 57474,
+      "estimated_index_mb": 2.02416610717773,
+      "cache_hit": true
+    }
+  },
+  "run": {
+    "target": "self_test",
+    "query_count": 1000,
+    "repeat": 3,
+    "seed": 20261102,
+    "selected_algorithms": [
+      "dijkstra",
+      "astar",
+      "bidirectional_astar",
+      "ch"
+    ],
+    "executed_algorithms": [
+      "dijkstra",
+      "astar",
+      "bidirectional_astar",
+      "ch"
+    ],
+    "reference_algorithm": "dijkstra",
+    "created_at": "2026-11-03T22:11:31+08:00"
+  },
+  "cache": {
+    "ready": true,
+    "created_at": "2026-11-03T19:40:56+08:00",
+    "preprocess_time_source": "cached_first_build",
+    "note": "预处理时间来自当前缓存首次构建时的记录"
+  },
+  "validation": {
+    "passed": true,
+    "reference": "dijkstra",
+    "mismatch_count": 0
+  }
+}

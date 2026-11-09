@@ -1,0 +1,37 @@
+{
+  "data_root": "../../../A1_数据/01_路网清单/processed",
+  "runtime_root": "runtime",
+  "outputs": {
+    "frontend": "../结果/frontend",
+    "self_test": "../结果/self_test"
+  },
+  "cache_format_version": 1,
+  "auto_discover_graphml": true,
+  "defaults": {
+    "dataset": "nanshan",
+    "query_count": 300,
+    "repeat": 3,
+    "seed": 20261102,
+    "algorithms": ["dijkstra", "astar", "bidirectional_astar", "ch"]
+  },
+  "datasets": [
+    {
+      "id": "nanshan",
+      "name": "南山区路网",
+      "level": "district",
+      "file": "nanshan_driving_a1_fixed.graphml"
+    },
+    {
+      "id": "shenzhen",
+      "name": "深圳市路网",
+      "level": "city",
+      "file": "shenzhen_driving_a1_fixed.graphml"
+    },
+    {
+      "id": "guangdong",
+      "name": "广东省路网",
+      "level": "province",
+      "file": "guangdong_driving_a1_fixed.graphml"
+    }
+  ]
+}
