@@ -1,0 +1,16 @@
+# 仅归档算法代码、接口文件、已有结果和文档
+__pycache__/
+*.py[cod]
+.DS_Store
+*.exe
+*.dll
+*.so
+*.obj
+*.o
+*.cache
+*.rgraph
+*.rgraph.json
+**/runtime/
+**/.build/
+**/CMakeFiles/
+**/cmake-build-*/
