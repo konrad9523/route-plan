@@ -1,0 +1,10 @@
+{
+  "dataset": { "id": "shenzhen", "name": "深圳市路网", "nodes": 85709, "edges": 176971 },
+  "run": { "run_id": "Q300/S20261102", "query_count": 300, "repeat": 3, "seed": 20261102 },
+  "algorithms": {
+    "dijkstra": { "name": "Dijkstra", "before": { "queryP50": 6.57, "expanded": 41520 }, "optimized": { "queryP50": 4.02, "expanded": 27800 } },
+    "astar": { "name": "A*", "before": { "queryP50": 2.15, "expanded": 11058 }, "optimized": { "queryP50": 1.38, "expanded": 6900 } },
+    "bidirectional_astar": { "name": "双向 A*", "before": { "queryP50": 2.43, "expanded": 8836 }, "optimized": { "queryP50": 1.52, "expanded": 5120 } },
+    "bidirectional_dijkstra": { "name": "双向 Dijkstra", "before": { "queryP50": 4.88, "expanded": 30120 }, "optimized": { "queryP50": 2.91, "expanded": 16700 } }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "guangdong": {
+    "dataset": { "id": "guangdong", "name": "广东省路网", "nodes": 1072749, "edges": 2302459 },
+    "run": { "run_id": "Q300/S20261102", "query_count": 300, "repeat": 3, "seed": 20261102 },
+    "algorithms": {
+      "dijkstra": { "query_p50_ms": 129.76875, "query_p95_ms": 223.20452, "expanded_mean": 529438.38, "preprocess_ms": 0, "shortcut_edges": 0 },
+      "astar": { "query_p50_ms": 48.3528, "query_p95_ms": 484.19288, "expanded_mean": 187488.42, "preprocess_ms": 199.0353, "shortcut_edges": 0 },
+      "bidirectional_astar": { "query_p50_ms": 93.8564, "query_p95_ms": 234.453485, "expanded_mean": 157895.07, "preprocess_ms": 606.7424, "shortcut_edges": 0 },
+      "ch": { "query_p50_ms": 12.09045, "query_p95_ms": 13.50752, "expanded_mean": 2270.87, "preprocess_ms": 204444.6342, "shortcut_edges": 2587887 }
+    }
+  },
+  "shenzhen": {
+    "dataset": { "id": "shenzhen", "name": "深圳市路网", "nodes": 85709, "edges": 176971 },
+    "run": { "run_id": "Q300/S20261102", "query_count": 300, "repeat": 3, "seed": 20261102 },
+    "algorithms": {
+      "dijkstra": { "query_p50_ms": 6.56915, "query_p95_ms": 12.51949, "expanded_mean": 41519.88, "preprocess_ms": 0, "shortcut_edges": 0 },
+      "astar": { "query_p50_ms": 2.1496, "query_p95_ms": 7.95437, "expanded_mean": 11057.86, "preprocess_ms": 10.0113, "shortcut_edges": 0 },
+      "bidirectional_astar": { "query_p50_ms": 2.4274, "query_p95_ms": 8.028285, "expanded_mean": 8835.88, "preprocess_ms": 34.428, "shortcut_edges": 0 },
+      "ch": { "query_p50_ms": 0.8522, "query_p95_ms": 1.025855, "expanded_mean": 466.68, "preprocess_ms": 2634.1185, "shortcut_edges": 219156 }
+    }
+  },
+  "nanshan": {
+    "dataset": { "id": "nanshan", "name": "南山区路网", "nodes": 13357, "edges": 27893 },
+    "run": { "run_id": "Q300/S20261102", "query_count": 300, "repeat": 3, "seed": 20261102 },
+    "algorithms": {
+      "dijkstra": { "query_p50_ms": 0.8403, "query_p95_ms": 1.525855, "expanded_mean": 6474.48, "preprocess_ms": 0, "shortcut_edges": 0 },
+      "astar": { "query_p50_ms": 0.22655, "query_p95_ms": 1.165335, "expanded_mean": 1973.62, "preprocess_ms": 1.3651, "shortcut_edges": 0 },
+      "bidirectional_astar": { "query_p50_ms": 0.3608, "query_p95_ms": 1.05124, "expanded_mean": 1480.46, "preprocess_ms": 6.8608, "shortcut_edges": 0 },
+      "ch": { "query_p50_ms": 0.03905, "query_p95_ms": 0.0679, "expanded_mean": 149.05, "preprocess_ms": 190.732, "shortcut_edges": 29581 }
+    }
+  }
+}
