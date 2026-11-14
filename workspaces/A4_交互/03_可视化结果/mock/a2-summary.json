@@ -1,0 +1,10 @@
+{
+  "dataset": { "id": "nanshan", "name": "南山区路网", "nodes": 13357, "edges": 27893 },
+  "run": { "run_id": "Q300/S20261102", "query_count": 300, "repeat": 3, "seed": 20261102 },
+  "algorithms": {
+    "dijkstra": { "query_p50_ms": 0.8403, "query_p95_ms": 1.525855, "expanded_mean": 6474.48, "preprocess_ms": 0, "shortcut_edges": 0 },
+    "astar": { "query_p50_ms": 0.22655, "query_p95_ms": 1.165335, "expanded_mean": 1973.62, "preprocess_ms": 1.3651, "shortcut_edges": 0 },
+    "bidirectional_astar": { "query_p50_ms": 0.3608, "query_p95_ms": 1.05124, "expanded_mean": 1480.46, "preprocess_ms": 6.8608, "shortcut_edges": 0 },
+    "ch": { "query_p50_ms": 0.03905, "query_p95_ms": 0.0679, "expanded_mean": 149.05, "preprocess_ms": 190.732, "shortcut_edges": 29581 }
+  }
+}

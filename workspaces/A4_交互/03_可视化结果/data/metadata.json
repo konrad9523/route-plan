@@ -1,0 +1,20 @@
+{
+  "status": "downloaded",
+  "source": "OpenStreetMap PBF extract",
+  "bbox": "29.93,113.63,30.93,115.12",
+  "highway_types": [
+    "motorway",
+    "motorway_link",
+    "trunk",
+    "trunk_link",
+    "primary",
+    "primary_link",
+    "secondary",
+    "secondary_link",
+    "tertiary",
+    "tertiary_link"
+  ],
+  "license": "ODbL 1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "note": "Server-side Wuhan major-road cache. The browser requests regional subsets through server.py."
+}

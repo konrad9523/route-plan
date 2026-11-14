@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>G4 / 车辆导航实验室</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css?v=67">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark">G4</div>
+        <div>
+          <p class="eyebrow">WEB MAPPING STUDIO</p>
+          <h1>车辆导航实验室</h1>
+        </div>
+      </div>
+      <div class="topbar-tools">
+        <button class="topbar-board-button" id="analysisTopbarBtn" type="button"><span aria-hidden="true">▦</span>算法成果</button>
+        <div class="topbar-meta">
+          <span class="live-dot"></span>
+          <span>车辆导航 · Leaflet 实时渲染</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <section class="analysis-panel" id="analysisPanel" hidden aria-label="算法性能">
+        <header class="analysis-header">
+          <nav class="analysis-tabs" aria-label="算法成果板块">
+            <button class="analysis-tab is-active" type="button" data-analysis-tab="a2">A2 基础版横向对比</button>
+            <button class="analysis-tab" type="button" data-analysis-tab="a3">A3 性能对比</button>
+          </nav>
+          <div class="analysis-header-actions">
+            <span class="analysis-mode-badge">A2 接口 · A3 接口</span>
+            <button class="panel-close" id="analysisCloseBtn" type="button" aria-label="关闭算法成果">×</button>
+          </div>
+        </header>
+        <section class="analysis-board" data-analysis-board="a2">
+          <div class="analysis-result-panel">
+            <div class="analysis-card-grid" id="a2Cards"></div>
+          </div>
+          <div class="analysis-chart-grid">
+            <article class="analysis-chart"><h3>查询耗时 p50</h3><div id="a2QueryChart" class="analysis-bars"></div></article>
+            <article class="analysis-chart"><h3>平均扩展节点</h3><div id="a2ExpandedChart" class="analysis-bars"></div></article>
+            <article class="analysis-chart"><h3>算法预处理成本</h3><div id="a2PreprocessChart" class="analysis-bars"></div></article>
+          </div>
+          <div class="analysis-lower-grid">
+            <div class="analysis-settings-column">
+              <div class="a2-test-settings" aria-label="A2 性能测试参数">
+                <div class="a2-test-settings-title"><strong>A2 测试参数</strong></div>
+                <div class="a2-test-fields">
+                  <div class="analysis-dataset-control">
+                    <label class="analysis-dataset-field">数据集<select id="a2Dataset" aria-label="A2 性能数据集"></select></label>
+                    <button class="button button-secondary" id="a2RefreshBtn" type="button">刷新数据</button>
+                  </div>
+                  <fieldset class="a2-algorithms">
+                    <legend>算法</legend>
+                    <label><input type="checkbox" name="a2Algorithm" value="dijkstra" checked> Dijkstra</label>
+                    <label><input type="checkbox" name="a2Algorithm" value="astar" checked> A*</label>
+                    <label><input type="checkbox" name="a2Algorithm" value="bidirectional_astar" checked> 双向 A*</label>
+                    <label><input type="checkbox" name="a2Algorithm" value="ch" checked> CH</label>
+                  </fieldset>
+                  <label>查询数<input id="a2QueryCount" type="number" min="3" max="10000" step="1" value="300"></label>
+                  <label>重复次数<input id="a2Repeat" type="number" min="1" max="20" step="1" value="3"></label>
+                  <label>随机种子<input id="a2Seed" type="number" min="0" max="2147483647" value="20261102"></label>
+                </div>
+                <div class="a2-test-actions"><button class="button button-primary" id="a2RunBtn" type="button">开始 A2 测试</button></div>
+              </div>
+            </div>
+            <div class="analysis-history-column">
+              <section class="analysis-history" aria-label="A2 历史查询记录">
+                <h3>历史查询记录</h3>
+                <div id="a2HistoryList" class="analysis-history-list"><p class="analysis-history-empty">完成测试后显示记录</p></div>
+              </section>
+              <details class="a2-run-trace" id="a2RunTraceDetails">
+                <summary>本次运行信息</summary>
+                <div id="a2RunTrace">尚未提交 A2 测试</div>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <section class="analysis-board" data-analysis-board="a3" hidden>
+          <div class="analysis-result-panel">
+            <div class="analysis-card-grid" id="a3Cards"></div>
+          </div>
+          <div class="analysis-chart-grid">
+            <article class="analysis-chart"><h3>优化前后查询耗时</h3><div id="a3QueryChart" class="analysis-bars"></div></article>
+            <article class="analysis-chart"><h3>优化前后扩展节点</h3><div id="a3ExpandedChart" class="analysis-bars"></div></article>
+            <article class="analysis-chart"><h3>预处理成本</h3><div id="a3PreprocessChart" class="analysis-bars"></div></article>
+          </div>
+          <div class="analysis-lower-grid">
+            <div class="analysis-settings-column">
+              <div class="a3-test-settings" aria-label="A3 性能测试参数">
+                <div class="a3-test-settings-title"><strong>A3 测试参数</strong></div>
+                <div class="a3-test-fields">
+                  <div class="analysis-dataset-control">
+                    <label class="analysis-dataset-field">数据集<select id="a3Dataset" aria-label="A3 性能数据集"></select></label>
+                    <button class="button button-secondary" id="a3RefreshBtn" type="button">刷新数据</button>
+                  </div>
+                  <fieldset class="a3-algorithms">
+                    <legend>算法</legend>
+                    <label><input type="checkbox" name="a3Algorithm" value="dijkstra" checked> Dijkstra</label>
+                    <label><input type="checkbox" name="a3Algorithm" value="astar" checked> A*</label>
+                    <label><input type="checkbox" name="a3Algorithm" value="bidirectional_astar" checked> 双向 A*</label>
+                    <label><input type="checkbox" name="a3Algorithm" value="bidirectional_dijkstra" checked> bi-Dijkstra</label>
+                    <label><input type="checkbox" name="a3Algorithm" value="ch" checked> CH</label>
+                  </fieldset>
+                  <label>查询数<input id="a3QueryCount" type="number" min="1" max="100" step="1" value="30"></label>
+                  <label>重复轮数<input id="a3Rounds" type="number" min="1" max="5" step="1" value="3"></label>
+                  <label>随机种子<input id="a3Seed" type="number" min="0" max="9007199254740991" placeholder="自动生成"></label>
+                </div>
+                <div class="a3-test-actions"><button class="button button-primary" id="a3RunBtn" type="button">开始 A3 测试</button></div>
+              </div>
+            </div>
+            <div class="analysis-history-column">
+              <section class="analysis-history" aria-label="A3 历史查询记录">
+                <h3>历史查询记录</h3>
+                <div id="a3HistoryList" class="analysis-history-list"><p class="analysis-history-empty">完成测试后显示记录</p></div>
+              </section>
+              <details class="a3-run-trace" id="a3RunTraceDetails">
+                <summary>本次运行信息</summary>
+                <div id="a3RunTrace">尚未提交 A3 测试</div>
+              </details>
+            </div>
+          </div>
+        </section>
+
+      </section>
+
+      <aside class="control-panel" aria-label="路径规划控制面板">
+        <div class="sidebar-page is-active" id="navPanel" data-page-panel="navigation">
+        <div class="panel-intro">
+          <div class="panel-intro-head">
+            <div>
+              <span class="section-kicker" id="planKicker">01 / PLAN</span>
+              <h2>配置一次导航</h2>
+            </div>
+            <button class="panel-close" id="panelCloseBtn" type="button" aria-label="关闭导航设置">×</button>
+          </div>
+        </div>
+
+        <div class="field-grid route-endpoints">
+          <label class="field">
+            <span>起点</span>
+            <input id="startNode" value="" placeholder="请输入起点" aria-label="起点" readonly>
+          </label>
+          <label class="field">
+            <span>终点</span>
+            <input id="endNode" value="" placeholder="请输入终点" aria-label="终点" readonly>
+          </label>
+        </div>
+        <div class="nav-stop-summary" id="navStopSummary">请在地图上依次点击起点和终点，位置会自动吸附到最近的道路节点。</div>
+
+        <div class="control-actions control-actions-priority">
+          <button class="button button-primary" id="planBtn"><span class="button-icon">↗</span>路线</button>
+          <div class="action-row">
+            <button class="button button-secondary" id="driveBtn"><span class="button-icon">●</span>车辆行驶</button>
+          </div>
+        </div>
+
+        <div class="region-row">
+          <label class="field">
+            <span>真实区域底图</span>
+            <input id="regionQuery" value="广东省" placeholder="输入城市或区域名称" aria-label="真实区域底图">
+          </label>
+          <button class="button button-region" id="regionBtn" type="button"><span class="button-icon">⌖</span>加载区域</button>
+        </div>
+        <label class="field field-wide">
+          <span>底图样式</span>
+          <select id="basemapSelect" aria-label="底图样式">
+            <option value="osmde">OpenStreetMap 真实街道</option>
+            <option value="hot">OpenStreetMap 人文</option>
+            <option value="esri">Esri 真实街道</option>
+            <option value="osm">OpenStreetMap 标准</option>
+            <option value="baidu">百度地图（实验图层）</option>
+          </select>
+        </label>
+        <div class="quick-display-row">
+          <label class="toggle-row"><input type="checkbox" id="networkContrast" checked><span class="toggle-ui"></span><span>底图压暗</span></label>
+          <label class="toggle-row"><input type="checkbox" id="searchAnimation"><span class="toggle-ui"></span><span>搜索动画</span></label>
+        </div>
+        <div class="field-grid route-options">
+          <label class="field">
+            <span>搜索算法</span>
+            <div class="algorithm-control-row">
+              <select id="algorithm">
+                <option>A*</option>
+                <option>Dijkstra</option>
+                <option>双向 A*</option>
+                <option>CH</option>
+              </select>
+              <button class="button button-quiet algorithm-replay-button" id="contractionBtn" type="button" hidden title="查看 CH 预处理回放" aria-label="查看 CH 预处理回放"><span class="button-icon">⌁</span>查看预处理</button>
+            </div>
+          </label>
+          <label class="field">
+            <span>路线目标</span>
+            <select id="routeMode">
+              <option>最快</option>
+              <option>最短</option>
+              <option>省油</option>
+              <option>少红绿灯</option>
+              <option>风景</option>
+            </select>
+          </label>
+        </div>
+
+        <details class="advanced-tools">
+          <summary>拓展功能</summary>
+          <div class="advanced-tools-body">
+            <div class="advanced-section">
+              <div class="advanced-section-title">路线偏好</div>
+              <div class="toggle-list">
+                <label class="toggle-row"><input type="checkbox" id="avoidHighway"><span class="toggle-ui"></span><span>禁止高速</span></label>
+                <label class="toggle-row"><input type="checkbox" id="avoidTraffic"><span class="toggle-ui"></span><span>额外惩罚拥堵</span></label>
+              </div>
+            </div>
+            <div class="advanced-section">
+              <div class="advanced-section-title">演示功能</div>
+              <div class="action-row advanced-action-row">
+                <button class="button button-quiet" id="trafficBtn" type="button"><span class="button-icon">≋</span>模拟拥堵</button>
+              </div>
+            </div>
+            <label class="skin-picker">
+              <span>配色</span>
+              <select id="skinSelect" aria-label="选择配色">
+                <option value="rose">茶玫乌木</option>
+                <option value="sage">浮光秋金</option>
+                <option value="lavender">海盐葡萄</option>
+                <option value="coast">美式复古</option>
+              </select>
+            </label>
+            <p>路线偏好和配色设置不会影响搜索动画，可按需展开。</p>
+          </div>
+        </details>
+        </div>
+
+      </aside>
+
+      <section class="map-stage">
+        <div id="map" aria-label="路径规划地图"></div>
+        <div class="ch-map-replay-bar" id="chMapReplayBar" hidden aria-live="polite">
+          <div class="ch-map-replay-head">
+            <strong>CH 预处理回放</strong>
+            <button class="ch-map-replay-close" id="chReplayClose" type="button" aria-label="关闭 CH 预处理回放">×</button>
+          </div>
+          <p class="ch-replay-info" id="chReplayInfo">等待 CH 事件</p>
+          <div class="analysis-progress"><span id="chReplayProgress"></span></div>
+          <p class="ch-replay-note" id="chReplayTotalNote">主地图：蓝色为待播放节点，绿色为已收缩节点，红色为当前节点；黄色为新增捷径边。</p>
+          <div class="ch-map-replay-controls">
+            <button class="button button-primary" id="chReplayPlay" type="button">播放</button>
+            <button class="button button-secondary" id="chReplayPause" type="button">暂停</button>
+            <button class="button button-secondary" id="chReplayStep" type="button">单步</button>
+            <button class="button button-secondary" id="chReplayReset" type="button">重置</button>
+          </div>
+        </div>
+        <div class="map-overlay map-overlay-top">
+          <div class="map-search-stack">
+            <div class="map-search" role="search">
+              <span class="map-search-icon" aria-hidden="true">⌕</span>
+              <input id="mapSearchInput" type="search" placeholder="搜索城市、区域或道路" aria-label="搜索城市、区域或道路" autocomplete="off">
+              <button type="button" id="mapSearchBtn" aria-label="搜索地图区域">搜索</button>
+            </div>
+            <div class="route-history-anchor" id="routeHistoryAnchor" hidden>
+              <details class="route-history" id="routeHistoryDetails">
+                <summary aria-label="展开历史搜索记录">
+                  <span class="route-history-label">历史搜索</span>
+                  <span class="route-history-count" id="routeHistoryCount">0</span>
+                </summary>
+                <div class="route-history-list" id="routeHistoryList"></div>
+              </details>
+            </div>
+          </div>
+          <div class="map-top-actions">
+            <button class="topbar-board-button map-board-button" id="analysisOpenBtn" type="button"><span aria-hidden="true">▦</span>算法成果</button>
+            <div class="map-chip"><span class="chip-pulse"></span><span id="mapStatus">准备就绪</span></div>
+            <button class="icon-button" id="fitBtn" title="查看完整路线" aria-label="查看完整路线">⌖</button>
+          </div>
+        </div>
+        <div class="map-overlay map-overlay-bottom">
+          <div class="map-hint"><span class="hint-key">地图操作</span><span>拖移 · 滚轮缩放 · 点击选点 · 拖动标记</span></div>
+          <div class="scale-note" id="mapAreaLabel">真实区域底图 / 广东省</div>
+        </div>
+      </section>
+
+      <aside class="insight-panel" aria-label="路线信息">
+        <div class="panel-heading">
+          <div>
+            <span class="section-kicker">02 / INSIGHT</span>
+            <h2>导航路线摘要</h2>
+          </div>
+          <div class="panel-heading-actions">
+            <span class="status-badge" id="resultBadge">待规划</span>
+            <button class="panel-close" id="insightCloseBtn" type="button" aria-label="收起路线摘要">×</button>
+          </div>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric"><span>路线距离</span><strong id="distanceMetric">—</strong><small>km</small></div>
+          <div class="metric"><span>搜索扩展</span><strong id="expandedMetric">—</strong><small>nodes</small></div>
+          <div class="metric"><span>搜索耗时</span><strong id="queryMetric">—</strong><small>ms</small></div>
+        </div>
+
+        <section class="comparison-section" id="comparisonSection" hidden>
+          <div class="section-line"><span>同一路线搜索对比</span><span id="comparisonCount">0 次</span></div>
+          <div class="comparison-list" id="comparisonList"></div>
+          <p class="comparison-hint" id="comparisonHint">再次规划同一起终点，可对比不同算法的搜索表现。</p>
+        </section>
+
+        <div class="route-card">
+          <div class="route-card-head"><span>当前策略</span><strong id="strategyLabel">A* · 最快</strong></div>
+          <div class="route-progress"><span id="routeProgress"></span></div>
+          <div class="route-card-foot"><span id="routeHint">等待一次规划</span><span id="progressValue">0%</span></div>
+        </div>
+
+        <div class="insight-section">
+          <div class="section-line"><span>途经路段</span><span id="segmentCount">0 段</span></div>
+          <ol class="segment-list" id="segmentList"></ol>
+        </div>
+
+        <div class="system-note" id="systemNote"><span class="note-mark">i</span><span>路线结果与动画状态会在此同步。</span></div>
+      </aside>
+
+      <button class="panel-toggle panel-toggle-left" id="leftPanelToggle" type="button" aria-label="收起左侧功能栏" aria-pressed="false">‹</button>
+      <button class="panel-toggle panel-toggle-right" id="rightPanelToggle" type="button" aria-label="收起右侧路线栏" aria-pressed="false">›</button>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="api-config.js?v=6"></script>
+  <script src="a2-api.js?v=12"></script>
+  <script src="a3-api.js?v=4"></script>
+  <script src="ch-api.js?v=2"></script>
+  <script src="ch-replay.js?v=9"></script>
+  <script src="performance-dashboard.js?v=22"></script>
+  <script src="app.js?v=52"></script>
+</body>
+</html>
